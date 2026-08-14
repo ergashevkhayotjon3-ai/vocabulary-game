@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#58cc02">
+    <title>A lot vs A lot of - 40 Questions Beginner App</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js" onerror="window.confetti = function(){};"></script>
+    <style>
+        :root {
+            --primary-color: #58cc02;
+            --primary-dark: #46a302;
+            --background: #fdfbf7;
+            --card-bg: #ffffff;
+            --text-color: #3c3c3c;
+            --border-color: #e5e5e5;
+        }
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+        body {
+            font-family: 'Segoe UI', tahoma, sans-serif;
+            background-color: var(--background);
+            color: var(--text-color);
+            margin: 0;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+        }
+        html, body {
+            height: 100%;
+        }
+        .container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            border: 2px solid var(--border-color);
+            margin: 10px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .stats {
+            font-weight: bold;
+            color: #ff9600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .progress-bar-container {
+            flex-grow: 1;
+            background: var(--border-color);
+            height: 14px;
+            border-radius: 7px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: var(--primary-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 7px;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        .symbol-container {
+            width: 100%;
+            height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f0f7ff;
+            border-radius: 15px;
+            border: 2px solid #d0e3fc;
+            margin-bottom: 12px;
+            font-size: 2.8rem;
+        }
+        .word-box {
+            background: #f0f9ed;
+            border-radius: 15px;
+            padding: 12px 15px;
+            border: 1px solid #d7ffb8;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+        .word-box h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.15rem;
+            color: var(--primary-dark);
+            word-break: break-word;
+        }
+        .info-row {
+            font-size: 0.85rem;
+            margin-top: 6px;
+            color: #555;
+            line-height: 1.4;
+        }
+        button {
+            -webkit-appearance: none;
+            appearance: none;
+            font-family: inherit;
+        }
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 0 0 #46a302;
+            transition: all 0.1s ease;
+            margin-top: 8px;
+            touch-action: manipulation;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .btn-menu {
+            background-color: #ff9600;
+            box-shadow: 0 4px 0 0 #cc7a00;
+            margin-top: 10px;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .menu-btn {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 14px 15px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 0 var(--border-color);
+            transition: all 0.1s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .menu-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .option-btn {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            box-shadow: 0 3px 0 0 var(--border-color);
+            color: var(--text-color);
+        }
+        .option-btn:hover {
+            background: #f7f7f7;
+            border-color: #ccc;
+        }
+        .option-btn.correct {
+            background: #d7ffb8 !important;
+            border-color: var(--primary-color) !important;
+            color: var(--primary-dark) !important;
+        }
+        .option-btn.wrong {
+            background: #ffebe8 !important;
+            border-color: #ff4b4b !important;
+            color: #d32f2f !important;
+        }
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            min-height: 22px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header id="mainHeader" style="display: none;">
+            <div class="stats">🔥 <span id="streak">0</span> | ⭐ <span id="score">0</span></div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </header>
+
+        <!-- Asosiy Menyu Ekrani -->
+        <div id="menuScreen" class="screen active">
+            <h2>🟢 Beginner: 40 ta Test</h2>
+            <p style="color: #666; font-size: 0.9rem;">A lot vs A lot of (40 ta savol):</p>
+            <div class="menu-grid">
+                <button class="menu-btn" onclick="startMode('learn')">📖 Qoidalar va Misollar</button>
+                <button class="menu-btn" onclick="startMode('mcq')">✏️ 40 talik MCQ Test</button>
+                <button class="menu-btn" style="background: #f0f9ed; border-color: var(--primary-color); color: var(--primary-dark);" onclick="startMode('all')">🚀 Hammasini birga bajarish</button>
+            </div>
+        </div>
+
+        <!-- 1-bosqich: Oson qoida va misollar -->
+        <div id="learnScreen" class="screen">
+            <div id="phaseIndicator" style="font-size: 0.85rem; font-weight: bold; color: #888; margin-bottom: 8px;">Qoidalar</div>
+            <div class="symbol-container" id="learnSymbol">💡</div>
+            <div class="word-box">
+                <h2 id="learnSentence"></h2>
+                <div class="info-row" id="learnRule"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn" style="background-color: #78909c; box-shadow: 0 4px 0 0 #546e7a;" onclick="prevLearnStep()" id="prevBtn">⬅️ Orqaga</button>
+                <button class="btn" onclick="nextLearnStep()" id="nextBtn">Keyingisi ➔</button>
+            </div>
+            <button class="btn btn-menu" onclick="goToMenu()">🏠 Menyuga qaytish</button>
+        </div>
+
+        <!-- 2-bosqich: MCQ Test Ekrani -->
+        <div id="mcqScreen" class="screen">
+            <div id="mcqIndicator" style="font-size: 0.85rem; font-weight: bold; color: #9c27b0; margin-bottom: 6px;">Test</div>
+            <h3 id="mcqQuestion" style="margin-top:3px; font-size: 1.05rem; margin-bottom: 10px; line-height: 1.4;"></h3>
+            <div class="symbol-container" id="mcqSymbol" style="height: 60px; font-size: 2.2rem;">❓</div>
+            
+            <div class="options-container" id="optionsContainer"></div>
+
+            <div class="feedback" id="feedbackMsg"></div>
+            <button class="btn" id="nextMcqBtn" style="display:none; margin-top:8px; background-color: #2196F3; box-shadow: 0 4px 0 0 #0d8aee;" onclick="nextMcqStep()">Keyingisi ➔</button>
+            <button class="btn btn-menu" onclick="goToMenu()">🏠 Menyuga qaytish</button>
+        </div>
+
+        <!-- Yakuniy Natijalar Ekrani -->
+        <div id="resultScreen" class="screen">
+            <h2>📊 Ajoyib! Test Tugadi</h2>
+            <div style="font-size: 1.4rem; font-weight: bold; color: #ff9600; margin: 15px 0;">To'plangan Ball: <span id="finalScore">0</span></div>
+            <div id="summaryList" style="text-align: left; max-height: 200px; overflow-y: auto; background: #f7f7f7; padding: 10px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 10px;"></div>
+            <button class="btn btn-menu" onclick="goToMenu()">🏠 Bosh menyuga qaytish</button>
+        </div>
+    </div>
+
+    <script>
+        const learnData = [
+            { 
+                sentence: "I eat a lot.", 
+                rule: "<b>A lot</b> so'zidan keyin ot (narsaning nomi) kelmaydi. U fe'ldan keyin kelib 'ko'p' ma'nosini beradi.", 
+                symbol: "🍎" 
+            },
+            { 
+                sentence: "I have a lot of apples.", 
+                rule: "<b>A lot of</b> so'zidan keyin albatta ot (apples - olmalar) kelishi shart ('ko'p olmalar').", 
+                symbol: "🍏" 
+            },
+            { 
+                sentence: "She sleeps a lot.", 
+                rule: "Gap oxirida kelsa, odatda <b>a lot</b> ishlatiladi.", 
+                symbol: "😴" 
+            },
+            { 
+                sentence: "I have a lot of water.", 
+                rule: "<b>A lot of</b> ham sanaladigan, ham sanalmaydigan otlar bilan do'st (ko'p suv).", 
+                symbol: "💧" 
+            }
+        ];
+
+        // Beginner darajadagi 40 ta to'liq savol to'plami
+        const mcqData = [
+            { q: "I have ___ cats.", options: ["a lot", "a lot of", "much", "many of"], correct: "a lot of", symbol: "🐱" },
+            { q: "She reads ___.", options: ["a lot of", "a lot", "many", "some"], correct: "a lot", symbol: "📖" },
+            { q: "We need ___ milk.", options: ["a lot", "a lot of", "many", "few"], correct: "a lot of", symbol: "🥛" },
+            { q: "He runs ___ every morning.", options: ["a lot of", "a lot", "many", "any"], correct: "a lot", symbol: "🏃‍♂️" },
+            { q: "There are ___ flowers in the garden.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "🌸" },
+            { q: "Do you play games? — Yes, ___.", options: ["a lot of", "a lot", "much", "many"], correct: "a lot", symbol: "🎮" },
+            { q: "I buy ___ pens.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "🖊️" },
+            { q: "My dog eats ___.", options: ["a lot of", "a lot", "many", "few"], correct: "a lot", symbol: "🐕" },
+            { q: "She has ___ money.", options: ["a lot", "a lot of", "many", "few"], correct: "a lot of", symbol: "💵" },
+            { q: "They work ___.", options: ["a lot of", "a lot", "many", "some"], correct: "a lot", symbol: "💼" },
+            { q: "We saw ___ birds.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "🐦" },
+            { q: "I like you ___.", options: ["a lot of", "a lot", "many", "few"], correct: "a lot", symbol: "❤️" },
+            { q: "He has ___ toys.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "🧸" },
+            { q: "It snows ___ in winter.", options: ["a lot of", "a lot", "many", "some"], correct: "a lot", symbol: "❄️" },
+            { q: "There is ___ food on the table.", options: ["a lot", "a lot of", "many", "few"], correct: "a lot of", symbol: "🍲" },
+            { q: "Children play ___ in the yard.", options: ["a lot of", "a lot", "many", "few"], correct: "a lot", symbol: "⚽" },
+            { q: "She has ___ shoes.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "👠" },
+            { q: "I cook ___.", options: ["a lot of", "a lot", "many", "some"], correct: "a lot", symbol: "🍳" },
+            { q: "We have ___ homework today.", options: ["a lot", "a lot of", "many", "few"], correct: "a lot of", symbol: "📝" },
+            { q: "He smiles ___.", options: ["a lot of", "a lot", "many", "any"], correct: "a lot", symbol: "😊" },
+            { q: "There are ___ cars on the street.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "🚗" },
+            { q: "Do you watch TV? — Yes, ___.", options: ["a lot of", "a lot", "much", "many"], correct: "a lot", symbol: "📺" },
+            { q: "She drinks ___ tea.", options: ["a lot", "a lot of", "many", "few"], correct: "a lot of", symbol: "🫖" },
+            { q: "They travel ___.", options: ["a lot of", "a lot", "many", "some"], correct: "a lot", symbol: "✈️" },
+            { q: "I have ___ friends.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "👥" },
+            { q: "He thinks ___.", options: ["a lot of", "a lot", "many", "few"], correct: "a lot", symbol: "🤔" },
+            { q: "There is ___ sugar in the cup.", options: ["a lot", "a lot of", "many", "few"], correct: "a lot of", symbol: "🧊" },
+            { q: "My sister talks ___.", options: ["a lot of", "a lot", "many", "some"], correct: "a lot", symbol: "🗣️" },
+            { q: "We bought ___ fruit.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "🍌" },
+            { q: "It rains ___ in spring.", options: ["a lot of", "a lot", "many", "few"], correct: "a lot", symbol: "🌧️" },
+            { q: "She has ___ questions.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "❓" },
+            { q: "They laugh ___.", options: ["a lot of", "a lot", "many", "some"], correct: "a lot", symbol: "😂" },
+            { q: "I need ___ time.", options: ["a lot", "a lot of", "many", "few"], correct: "a lot of", symbol: "⏰" },
+            { q: "He swims ___ in summer.", options: ["a lot of", "a lot", "many", "few"], correct: "a lot", symbol: "🏊‍♂️" },
+            { q: "There are ___ stars in the sky.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "✨" },
+            { q: "Do you sing? — Yes, ___.", options: ["a lot of", "a lot", "much", "many"], correct: "a lot", symbol: "🎤" },
+            { q: "She has ___ pictures.", options: ["a lot", "a lot of", "much", "little"], correct: "a lot of", symbol: "🖼️" },
+            { q: "We wait ___.", options: ["a lot of", "a lot", "many", "some"], correct: "a lot", symbol: "⏳" },
+            { q: "I have ___ work to do.", options: ["a lot", "a lot of", "many", "few"], correct: "a lot of", symbol: "💻" },
+            { q: "Birds fly ___.", options: ["a lot of", "a lot", "many", "few"], correct: "a lot", symbol: "🦅" }
+        ];
+
+        let learnList = [], mcqList = [];
+        let currentIndex = 0, score = 0, streak = 0;
+        let userAnswersHistory = [];
+        let currentMode = 'menu';
+        let answeredCurrent = false;
+
+        function shuffleArrays() {
+            learnList = [...learnData].sort(() => Math.random() - 0.5);
+            mcqList = [...mcqData].sort(() => Math.random() - 0.5);
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if(screenId === 'menuScreen') {
+                document.getElementById('mainHeader').style.display = 'none';
+            } else {
+                document.getElementById('mainHeader').style.display = 'flex';
+            }
+        }
+
+        function goToMenu() {
+            currentMode = 'menu';
+            score = 0;
+            streak = 0;
+            showScreen('menuScreen');
+        }
+
+        function startMode(mode) {
+            currentMode = mode;
+            currentIndex = 0;
+            score = 0;
+            streak = 0;
+            shuffleArrays();
+
+            if (mode === 'learn') {
+                showScreen('learnScreen');
+                loadLearnCard();
+            } else if (mode === 'mcq') {
+                showScreen('mcqScreen');
+                loadMcqQuestion();
+            } else if (mode === 'all') {
+                showScreen('learnScreen');
+                loadLearnCard();
+            }
+        }
+
+        function getTotalSteps() {
+            if (currentMode === 'all') return learnList.length + mcqList.length;
+            if (currentMode === 'learn') return learnList.length;
+            if (currentMode === 'mcq') return mcqList.length;
+            return 1;
+        }
+
+        function getCurrentGlobalStep() {
+            if (currentMode === 'learn') return currentIndex + 1;
+            if (currentMode === 'mcq') return currentIndex + 1;
+            if (currentMode === 'all') {
+                if (document.getElementById('learnScreen').classList.contains('active')) return currentIndex + 1;
+                if (document.getElementById('mcqScreen').classList.contains('active')) return learnList.length + currentIndex + 1;
+            }
+            return 1;
+        }
+
+        function updateProgress() {
+            let total = getTotalSteps();
+            let current = getCurrentGlobalStep();
+            let percent = (current / total) * 100;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('streak').innerText = streak;
+            document.getElementById('score').innerText = score;
+        }
+
+        function triggerConfetti() {
+            confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+        }
+
+        function loadLearnCard() {
+            if (currentIndex >= learnList.length) {
+                if (currentMode === 'all') {
+                    currentIndex = 0;
+                    showScreen('mcqScreen');
+                    loadMcqQuestion();
+                    return;
+                } else {
+                    showFinalResults();
+                    return;
+                }
+            }
+            let item = learnList[currentIndex];
+            document.getElementById('phaseIndicator').innerText = `1-bosqich: Qoidalar (${currentIndex + 1}/${learnList.length})`;
+            document.getElementById('learnSymbol').innerText = item.symbol;
+            document.getElementById('learnSentence').innerText = item.sentence;
+            document.getElementById('learnRule').innerHTML = item.rule;
+            
+            document.getElementById('prevBtn').style.visibility = (currentIndex === 0 && currentMode !== 'all') ? 'hidden' : 'visible';
+            updateProgress();
+        }
+
+        function nextLearnStep() {
+            currentIndex++;
+            loadLearnCard();
+        }
+
+        function prevLearnStep() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadLearnCard();
+            }
+        }
+
+        function loadMcqQuestion() {
+            if (currentIndex >= mcqList.length) {
+                showFinalResults();
+                return;
+            }
+            answeredCurrent = false;
+            let item = mcqList[currentIndex];
+            document.getElementById('mcqIndicator').innerText = `2-bosqich: Test (${currentIndex + 1}/${mcqList.length})`;
+            document.getElementById('mcqQuestion').innerText = item.q;
+            document.getElementById('mcqSymbol').innerText = item.symbol;
+            document.getElementById('feedbackMsg').innerText = "";
+            document.getElementById('nextMcqBtn').style.display = 'none';
+
+            let optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = "";
+
+            let shuffledOptions = [...item.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkMcqAnswer(opt, item.correct, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            updateProgress();
+        }
+
+        function checkMcqAnswer(selectedOpt, correctOpt, btnElement) {
+            if (answeredCurrent) return;
+            answeredCurrent = true;
+
+            let allButtons = document.querySelectorAll('.option-btn');
+            allButtons.forEach(b => {
+                b.style.pointerEvents = 'none';
+                if (b.innerText === correctOpt) {
+                    b.classList.add('correct');
+                }
+            });
+
+            let feedback = document.getElementById('feedbackMsg');
+            let isCorrect = (selectedOpt === correctOpt);
+            let item = mcqList[currentIndex];
+
+            userAnswersHistory.push({ question: item.q, selected: selectedOpt, correct: correctOpt, isCorrect: isCorrect });
+
+            if (isCorrect) {
+                feedback.style.color = 'var(--primary-color)';
+                feedback.innerText = "Barakalla, to'g'ri! ✅";
+                score += 10;
+                streak++;
+                triggerConfetti();
+            } else {
+                btnElement.classList.add('wrong');
+                feedback.style.color = '#ff4b4b';
+                feedback.innerText = `Xato! To'g'ri javob: ${correctOpt}`;
+                streak = 0;
+            }
+
+            document.getElementById('nextMcqBtn').style.display = 'block';
+        }
+
+        function nextMcqStep() {
+            currentIndex++;
+            loadMcqQuestion();
+        }
+
+        function showFinalResults() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('resultScreen').classList.add('active');
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('mainHeader').style.display = 'none';
+
+            let summaryContainer = document.getElementById('summaryList');
+            summaryContainer.innerHTML = "";
+            userAnswersHistory.forEach((item, idx) => {
+                let div = document.createElement('div');
+                div.style.marginBottom = "6px";
+                div.innerHTML = `<b>${idx + 1}. ${item.question.replace('___', '(' + item.selected + ' )')}</b><br><span style="color:${item.isCorrect ? 'green' : 'red'}">Sizning javob: ${item.selected} ${item.isCorrect ? '✅' : '❌ (To\'g\'ri javob: ' + item.correct + ')'}</span>`;
+                summaryContainer.appendChild(div);
+            });
+            triggerConfetti();
+        }
+    </script>
+</body>
+</html>

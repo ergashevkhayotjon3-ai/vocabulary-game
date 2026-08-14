@@ -3,53 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Dars</title>
+    <title>Video Dars - Mini App</title>
+    <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background-color: #0d0d0d; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #0d0d0d;
+            color: #ffffff;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
         }
         .video-container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1000px;
             aspect-ratio: 16 / 9;
             background: #000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
         }
-        video { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
             outline: none;
+        }
+        .error-message {
+            text-align: center;
+            padding: 20px;
+            color: #ff6b6b;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
 
-    <div class="video-container">
+    <div class="video-container" id="container">
         <video id="myVideo" controls controlsList="nodownload" playsinline>
-            Sizning brauzeringiz videoni qo'llab-quvvatlaydi.
+            Sizning brauzeringiz videoni qo'llab-quvvatlamaydi.
         </video>
     </div>
 
     <script>
+        // Telegram WebApp ni ishga tushirish
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
 
-        // Havoladagi ?v=... qismidan video manzilini o'qib olish
-        const urlParams = new URLSearchParams(window.location.search);
-        const videoUrl = urlParams.get('v');
-
         const videoElement = document.getElementById('myVideo');
+        const container = document.getElementById('container');
 
+        let videoUrl = "";
+
+        // 1. URL'dan ?v= parametrini tekshirish
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('v')) {
+            videoUrl = urlParams.get('v');
+        } 
+        // 2. Agar Telegram startapp parametri orqali kelgan bo'lsa
+        else if (Telegram.WebApp.startParam) {
+            videoUrl = Telegram.WebApp.startParam;
+        }
+
+        // Videoni o'rnatish
         if (videoUrl) {
+            // URL kodlangan bo'lsa, uni ochamiz
             videoElement.src = decodeURIComponent(videoUrl);
+            videoElement.load();
         } else {
-            alert("Video topilmadi!");
+            container.innerHTML = `<div class="error-message">⚠️ Xatolik: Ko'rsatiladigan video topilmadi!</div>`;
         }
     </script>
 </body>

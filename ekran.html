@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Dars</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background-color: #0d0d0d; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
+        .video-container {
+            width: 100%;
+            max-width: 1200px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+        }
+        video { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="video-container">
+        <video id="myVideo" controls controlsList="nodownload" playsinline>
+            Sizning brauzeringiz videoni qo'llab-quvvatlaydi.
+        </video>
+    </div>
+
+    <script>
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+
+        // Havoladagi ?v=... qismidan video manzilini o'qib olish
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoUrl = urlParams.get('v');
+
+        const videoElement = document.getElementById('myVideo');
+
+        if (videoUrl) {
+            videoElement.src = decodeURIComponent(videoUrl);
+        } else {
+            alert("Video topilmadi!");
+        }
+    </script>
+</body>
+</html>

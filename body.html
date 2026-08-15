@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parts of the Body - 3 Bosqichli Poll</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #58cc02;
+            --primary-dark: #46a302;
+            --background: #fdfbf7;
+            --card-bg: #ffffff;
+            --text-color: #3c3c3c;
+            --border-color: #e5e5e5;
+        }
+        body {
+            font-family: 'Segoe UI', tahoma, sans-serif;
+            background-color: var(--background);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            border: 2px solid var(--border-color);
+            margin: 10px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .stats {
+            font-weight: bold;
+            color: #ff9600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .progress-bar-container {
+            flex-grow: 1;
+            background: var(--border-color);
+            height: 14px;
+            border-radius: 7px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: var(--primary-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 7px;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        .symbol-container {
+            width: 100%;
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f0f7ff;
+            border-radius: 15px;
+            border: 2px solid #d0e3fc;
+            margin-bottom: 12px;
+            font-size: 4.5rem;
+        }
+        .word-box {
+            background: #f0f9ed;
+            border-radius: 15px;
+            padding: 12px 15px;
+            border: 1px solid #d7ffb8;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+        .word-box h2 {
+            margin: 0 0 3px 0;
+            font-size: 1.4rem;
+            color: var(--primary-dark);
+        }
+        .info-row {
+            font-size: 0.85rem;
+            margin-top: 6px;
+            color: #555;
+            line-height: 1.3;
+        }
+        .info-row b {
+            color: #333;
+        }
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 0 0 #46a302;
+            transition: all 0.1s ease;
+            margin-top: 8px;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .btn-audio {
+            background-color: #1cb0f6;
+            box-shadow: 0 4px 0 0 #1899d6;
+            margin-bottom: 8px;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .option-btn {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 12px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 0 var(--border-color);
+            transition: all 0.1s ease;
+        }
+        .option-btn:disabled {
+            cursor: default;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .option-btn.correct {
+            background-color: #d7ffb8 !important;
+            border-color: var(--primary-color) !important;
+            color: var(--primary-dark);
+        }
+        .option-btn.wrong {
+            background: #ffdfe0 !important;
+            border-color: #ff4b4b !important;
+            color: #ea2b2b;
+        }
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            min-height: 22px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="stats">🔥 <span id="streak">0</span> | ⭐ <span id="score">0</span></div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </header>
+
+        <!-- 1-bosqich: So'zni yodlash / Tanishuv -->
+        <div id="learnScreen" class="screen active">
+            <div id="phaseIndicator" style="font-size: 0.85rem; font-weight: bold; color: #888; margin-bottom: 8px;">1-bosqich: So'zni yodlash</div>
+            <div class="symbol-container" id="learnSymbol"></div>
+            <div class="word-box">
+                <h2 id="learnEn"></h2>
+                <div style="color: #666; font-size: 1rem; font-weight: 600;" id="learnUz"></div>
+                <div class="info-row">💡 <b>Izoh:</b> <span id="learnMnemo"></span></div>
+            </div>
+            <button class="btn btn-audio" onclick="speakWord()">🔊 Talaffuz qilish</button>
+            <button class="btn" onclick="nextLearnStep()">Keyingisi ➔</button>
+        </div>
+
+        <!-- 2-bosqich: Rasmli Test -->
+        <div id="quizImageScreen" class="screen">
+            <div id="quizImageIndicator" style="font-size: 0.85rem; font-weight: bold; color: #ff9600; margin-bottom: 8px;">2-bosqich: Rasmli Test</div>
+            <h3 id="quizImageQuestion" style="margin-top:3px; font-size: 1.1rem; margin-bottom: 12px;"></h3>
+            <div class="symbol-container" id="quizImageSymbol" style="height: 120px; font-size: 3.8rem;"></div>
+            <div class="options-grid" id="optionsContainerImg"></div>
+            <div class="feedback" id="feedbackMsgImg"></div>
+            <button class="btn" id="nextImgQuizBtn" style="display:none; margin-top:8px;" onclick="nextImageQuizStep()">Keyingisi ➔</button>
+        </div>
+
+        <!-- 3-bosqich: Rasmsiz Test -->
+        <div id="quizTextScreen" class="screen">
+            <div id="quizTextIndicator" style="font-size: 0.85rem; font-weight: bold; color: #0077cc; margin-bottom: 8px;">3-bosqich: Rasmsiz Test</div>
+            <h3 id="quizTextQuestion" style="margin-top:3px; font-size: 1.1rem; margin-bottom: 15px;"></h3>
+            <div class="options-grid" id="optionsContainerTxt"></div>
+            <div class="feedback" id="feedbackMsgTxt"></div>
+            <button class="btn" id="nextTxtQuizBtn" style="display:none; margin-top:8px;" onclick="nextTextQuizStep()">Keyingisi ➔</button>
+        </div>
+
+        <!-- Yakuniy Natijalar Ekrani -->
+        <div id="resultScreen" class="screen">
+            <h2>📊 Barcha Bosqichlar Tugadi!</h2>
+            <p>Siz barcha vazifalarni muvaffaqiyatli bajardingiz:</p>
+            <div style="font-size: 1.4rem; font-weight: bold; color: #ff9600; margin: 15px 0;">Umumiy Ball: <span id="finalScore">0</span></div>
+            <div id="summaryList" style="text-align: left; max-height: 200px; overflow-y: auto; background: #f7f7f7; padding: 10px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 10px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const originalBodyParts = [
+            { en: "head", uz: "Bosh", symbol: "👤", mnemo: "Tana qismi" },
+            { en: "face", uz: "Yuz", symbol: "😊", mnemo: "Bosh qismi" },
+            { en: "eye", uz: "Ko'z", symbol: "👁️", mnemo: "Yuz qismi" },
+            { en: "ear", uz: "Quloq", symbol: "👂", mnemo: "Bosh qismi" },
+            { en: "nose", uz: "Burun", symbol: "👃", mnemo: "Yuz qismi" },
+            { en: "mouth", uz: "Og'iz", symbol: "👄", mnemo: "Yuz qismi" },
+            { en: "neck", uz: "Bo'yin", symbol: "🧣", mnemo: "Bosh va tana oralig'i" },
+            { en: "shoulder", uz: "Yelka", symbol: "🦾", mnemo: "Tana yuqori qismi" },
+            { en: "arm", uz: "Qo'l", symbol: "💪", mnemo: "Yuqori qism" },
+            { en: "hand", uz: "Kaft", symbol: "✋", mnemo: "Qo'l uchi" },
+            { en: "finger", uz: "Barmoq", symbol: "☝️", mnemo: "Kaft qismi" },
+            { en: "chest", uz: "Ko'krak", symbol: "🫁", mnemo: "Tana old qismi" },
+            { en: "stomach", uz: "Qorin", symbol: "🤰", mnemo: "Tana markazi" },
+            { en: "leg", uz: "Oyoq", symbol: "🦵", mnemo: "Pastki qism" },
+            { en: "knee", uz: "Tizza", symbol: "🦿", mnemo: "Oyoq bo'g'imi" },
+            { en: "foot", uz: "Oyoq panjasi", symbol: "🦶", mnemo: "Oyoq uchi" }
+        ];
+
+        // Har safar sahifa ochilganda barcha bosqichlar uchun so'zlar aralashtiriladi (chalkashtiriladi)
+        let learnList = [...originalBodyParts].sort(() => Math.random() - 0.5);
+        let imageQuizList = [...originalBodyParts].sort(() => Math.random() - 0.5);
+        let textQuizList = [...originalBodyParts].sort(() => Math.random() - 0.5);
+
+        let currentIndex = 0, score = 0, streak = 0;
+        let currentItem = null;
+        let userAnswersHistory = [];
+
+        function updateProgress(currentStep, totalSteps) {
+            let percent = (currentStep / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('streak').innerText = streak;
+            document.getElementById('score').innerText = score;
+        }
+
+        function triggerConfetti() {
+            confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
+        }
+
+        // --- 1-BOSQICH: SO'ZNI YODLASH ---
+        function loadLearnCard() {
+            if (currentIndex >= learnList.length) {
+                currentIndex = 0;
+                startImageQuizPhase();
+                return;
+            }
+            currentItem = learnList[currentIndex];
+            document.getElementById('phaseIndicator').innerText = `1-bosqich: So'zni yodlash (${currentIndex + 1}/${learnList.length})`;
+            document.getElementById('learnSymbol').innerText = currentItem.symbol;
+            document.getElementById('learnEn').innerText = currentItem.en;
+            document.getElementById('learnUz').innerText = currentItem.uz;
+            document.getElementById('learnMnemo').innerText = currentItem.mnemo;
+            
+            let totalSteps = learnList.length + imageQuizList.length + textQuizList.length;
+            updateProgress(currentIndex + 1, totalSteps);
+        }
+
+        function nextLearnStep() {
+            currentIndex++;
+            loadLearnCard();
+        }
+
+        function speakWord() {
+            let utterance = new SpeechSynthesisUtterance(currentItem.en);
+            utterance.lang = 'en-US';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- 2-BOSQICH: RASMLI TEST ---
+        function startImageQuizPhase() {
+            currentIndex = 0;
+            document.getElementById('learnScreen').classList.remove('active');
+            document.getElementById('quizImageScreen').classList.add('active');
+            loadImageQuizQuestion();
+        }
+
+        function loadImageQuizQuestion() {
+            if (currentIndex >= imageQuizList.length) {
+                currentIndex = 0;
+                startTextQuizPhase();
+                return;
+            }
+            currentItem = imageQuizList[currentIndex];
+            document.getElementById('quizImageIndicator').innerText = `2-bosqich: Rasmli Test (${currentIndex + 1}/${imageQuizList.length})`;
+            document.getElementById('quizImageSymbol').innerText = currentItem.symbol;
+            document.getElementById('quizImageQuestion').innerText = `"${currentItem.uz}" so'zining inglizcha tarjimasi qaysi?`;
+            
+            let feedback = document.getElementById('feedbackMsgImg');
+            feedback.innerText = "";
+            document.getElementById('nextImgQuizBtn').style.display = 'none';
+
+            let options = [currentItem.en];
+            while (options.length < 4) {
+                let randomPart = originalBodyParts[Math.floor(Math.random() * originalBodyParts.length)].en;
+                if (!options.includes(randomPart)) options.push(randomPart);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            let container = document.getElementById('optionsContainerImg');
+            container.innerHTML = "";
+            options.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkImageAnswer(opt, btn);
+                container.appendChild(btn);
+            });
+
+            let globalStep = learnList.length + currentIndex + 1;
+            let totalSteps = learnList.length + imageQuizList.length + textQuizList.length;
+            updateProgress(globalStep, totalSteps);
+        }
+
+        function checkImageAnswer(selectedOption, btnElement) {
+            let allBtns = document.querySelectorAll('#quizImageScreen .option-btn');
+            allBtns.forEach(b => b.disabled = true);
+            let feedback = document.getElementById('feedbackMsgImg');
+
+            let isCorrect = (selectedOption === currentItem.en);
+            userAnswersHistory.push({
+                phase: "Rasmli Test",
+                uz: currentItem.uz,
+                selected: selectedOption,
+                correct: currentItem.en,
+                isCorrect: isCorrect
+            });
+
+            if (isCorrect) {
+                btnElement.classList.add('correct');
+                feedback.style.color = 'var(--primary-color)';
+                feedback.innerText = "To'g'ri! ✅";
+                score += 10;
+                streak++;
+                triggerConfetti();
+            } else {
+                btnElement.classList.add('wrong');
+                feedback.style.color = '#ff4b4b';
+                feedback.innerText = `Xato! To'g'ri javob: ${currentItem.en}`;
+                streak = 0;
+                allBtns.forEach(b => {
+                    if (b.innerText === currentItem.en) b.classList.add('correct');
+                });
+            }
+            document.getElementById('nextImgQuizBtn').style.display = 'block';
+        }
+
+        function nextImageQuizStep() {
+            currentIndex++;
+            loadImageQuizQuestion();
+        }
+
+        // --- 3-BOSQICH: RASMSIZ TEST ---
+        function startTextQuizPhase() {
+            currentIndex = 0;
+            document.getElementById('quizImageScreen').classList.remove('active');
+            document.getElementById('quizTextScreen').classList.add('active');
+            loadTextQuizQuestion();
+        }
+
+        function loadTextQuizQuestion() {
+            if (currentIndex >= textQuizList.length) {
+                showFinalResults();
+                return;
+            }
+            currentItem = textQuizList[currentIndex];
+            document.getElementById('quizTextIndicator').innerText = `3-bosqich: Rasmsiz Test (${currentIndex + 1}/${textQuizList.length})`;
+            document.getElementById('quizTextQuestion').innerText = `Faqat matn: "${currentItem.uz}" so'zining inglizcha tarjimasi qaysi?`;
+            
+            let feedback = document.getElementById('feedbackMsgTxt');
+            feedback.innerText = "";
+            document.getElementById('nextTxtQuizBtn').style.display = 'none';
+
+            let options = [currentItem.en];
+            while (options.length < 4) {
+                let randomPart = originalBodyParts[Math.floor(Math.random() * originalBodyParts.length)].en;
+                if (!options.includes(randomPart)) options.push(randomPart);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            let container = document.getElementById('optionsContainerTxt');
+            container.innerHTML = "";
+            options.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkTextAnswer(opt, btn);
+                container.appendChild(btn);
+            });
+
+            let globalStep = learnList.length + imageQuizList.length + currentIndex + 1;
+            let totalSteps = learnList.length + imageQuizList.length + textQuizList.length;
+            updateProgress(globalStep, totalSteps);
+        }
+
+        function checkTextAnswer(selectedOption, btnElement) {
+            let allBtns = document.querySelectorAll('#quizTextScreen .option-btn');
+            allBtns.forEach(b => b.disabled = true);
+            let feedback = document.getElementById('feedbackMsgTxt');
+
+            let isCorrect = (selectedOption === currentItem.en);
+            userAnswersHistory.push({
+                phase: "Rasmsiz Test",
+                uz: currentItem.uz,
+                selected: selectedOption,
+                correct: currentItem.en,
+                isCorrect: isCorrect
+            });
+
+            if (isCorrect) {
+                btnElement.classList.add('correct');
+                feedback.style.color = 'var(--primary-color)';
+                feedback.innerText = "To'g'ri! ✅";
+                score += 10;
+                streak++;
+                triggerConfetti();
+            } else {
+                btnElement.classList.add('wrong');
+                feedback.style.color = '#ff4b4b';
+                feedback.innerText = `Xato! To'g'ri javob: ${currentItem.en}`;
+                streak = 0;
+                allBtns.forEach(b => {
+                    if (b.innerText === currentItem.en) b.classList.add('correct');
+                });
+            }
+            document.getElementById('nextTxtQuizBtn').style.display = 'block';
+        }
+
+        function nextTextQuizStep() {
+            currentIndex++;
+            loadTextQuizQuestion();
+        }
+
+        // --- YAKUNIY NATIJALAR ---
+        function showFinalResults() {
+            document.getElementById('quizTextScreen').classList.remove('active');
+            document.getElementById('resultScreen').classList.add('active');
+            document.getElementById('finalScore').innerText = score;
+            
+            let totalSteps = learnList.length + imageQuizList.length + textQuizList.length;
+            updateProgress(totalSteps, totalSteps);
+
+            let summaryContainer = document.getElementById('summaryList');
+            summaryContainer.innerHTML = "";
+            userAnswersHistory.forEach((item, idx) => {
+                let div = document.createElement('div');
+                div.style.marginBottom = "6px";
+                div.innerHTML = `<b>${idx + 1}. [${item.phase}] ${item.uz}:</b> <span style="color:${item.isCorrect ? 'green' : 'red'}">${item.selected} ${item.isCorrect ? '✅' : '❌ (' + item.correct + ')'}</span>`;
+                summaryContainer.appendChild(div);
+            });
+            triggerConfetti();
+        }
+
+        // Dastlabki ishga tushish
+        loadLearnCard();
+    </script>
+</body>
+</html>

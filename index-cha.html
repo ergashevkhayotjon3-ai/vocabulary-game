@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inson Tana A'zolari - Duolingo Style</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Rasmiy Telegram Web App SDK — Mini App'ni to'g'ri initsializatsiya qilish uchun shart.
+         Buni ulamasdan Telegram ba'zan sahifani "noma'lum tashqi sayt" deb hisoblab,
+         qo'shimcha cheklovlar (jumladan media/audio bo'yicha) qo'llashi mumkin. -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
         body { background-color: #f7f7f7; color: #3c3c3c; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
@@ -56,6 +60,7 @@
     </div>
 
     <script>
+        // Har bir so'z uchun to'g'ridan-to'g'ri ishlaydigan audio havolalari bilan boyitilgan baza
         const data = [
             { en: "Head", uz: "Bosh", icon: "🧠", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/head-us.mp3" },
             { en: "Eye", uz: "Ko'z", icon: "👁️", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/eye-us.mp3" },
@@ -71,38 +76,71 @@
 
         let mode, idx, score, errs, correctList, qs, selectedAns;
 
-        const audioCache = {};
-        const audioFailed = {};
+        /* =========================================================
+           IShONCHLI OVOZ TIZIMI (barcha qurilmalar, jumladan
+           Telegram Android WebView uchun)
+           ---------------------------------------------------------
+           MUHIM: fetch()+blob usuli ISHLATILMAYDI, chunki Telegram
+           Android WebView tashqi domenlarga fetch() so'rovlarini
+           ko'pincha CORS/xavfsizlik siyosati bilan bloklaydi.
 
-        function updateSoundStatus(text) {
-            const el = document.getElementById('sound-status');
-            if (el) el.textContent = text;
+           Buning o'rniga har bir so'z uchun haqiqiy <audio> DOM
+           elementi yaratiladi va asl MP3 manziliga to'g'ridan-to'g'ri
+           ulanadi. <audio>/<video> elementlari faqat ijro etish
+           uchun CORS tekshiruvidan o'tishi shart emas — shuning
+           uchun bu ancha ishonchli.
+
+           Agar MP3 baribir ishlamasa (xato hodisasi chiqsa) —
+           qurilmaning ichki Text-to-Speech tizimi orqali fallback
+           ishlaydi. Agar u ham mavjud bo'lmasa — foydalanuvchiga
+           vibratsiya orqali bosilgani bildiriladi (jim qolmaydi).
+           ========================================================= */
+
+        // Telegram Web App SDK'ni to'g'ri initsializatsiya qilish
+        if (window.Telegram && window.Telegram.WebApp) {
+            try {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            } catch (e) { console.log('Telegram WebApp init xatosi:', e); }
         }
 
-        async function preloadAllAudio() {
-            for (const item of data) {
-                try {
-                    const res = await fetch(item.audio, { mode: 'cors' });
-                    if (!res.ok) throw new Error('http-' + res.status);
-                    const blob = await res.blob();
-                    audioCache[item.en] = URL.createObjectURL(blob);
-                } catch (e) {
-                    audioFailed[item.en] = true;
-                } finally {
-                    updateSoundStatus('');
-                }
-            }
-        }
-        preloadAllAudio();
+        // Har bir so'z uchun haqiqiy <audio> elementini oldindan yaratamiz
+        const audioHolder = document.createElement('div');
+        audioHolder.style.display = 'none';
+        document.body.appendChild(audioHolder);
 
+        data.forEach(item => {
+            const el = document.createElement('audio');
+            el.src = item.audio;
+            el.preload = 'auto';
+            el.setAttribute('playsinline', '');
+            el.addEventListener('error', () => { item.broken = true; });
+            audioHolder.appendChild(el);
+            item.audioEl = el;
+        });
+
+        // Birinchi tegishda barcha audio elementlarni "uyg'otish" —
+        // iOS/Android WebView'larning media-sessiyasini faollashtiradi.
         let audioUnlocked = false;
         function unlockAudioOnce() {
             if (audioUnlocked) return;
             audioUnlocked = true;
-            try {
-                const silent = new Audio();
-                silent.play().catch(() => {});
-            } catch (e) {}
+            data.forEach(item => {
+                const el = item.audioEl;
+                if (!el) return;
+                const prevVolume = el.volume;
+                el.volume = 0;
+                const p = el.play();
+                if (p && p.then) {
+                    p.then(() => {
+                        el.pause();
+                        el.currentTime = 0;
+                        el.volume = prevVolume;
+                    }).catch(() => { el.volume = prevVolume; });
+                } else {
+                    el.volume = prevVolume;
+                }
+            });
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.getVoices();
             }
@@ -111,28 +149,55 @@
         document.addEventListener('click', unlockAudioOnce, { once: true });
 
         function speakFallbackTTS(word) {
-            if (!('speechSynthesis' in window)) return;
+            if (!('speechSynthesis' in window) || !window.speechSynthesis) {
+                signalTapWithoutSound();
+                return;
+            }
             try {
                 window.speechSynthesis.cancel();
                 const utter = new SpeechSynthesisUtterance(word);
                 utter.lang = 'en-US';
                 utter.rate = 0.9;
+                let spoke = false;
+                utter.onstart = () => { spoke = true; };
                 window.speechSynthesis.speak(utter);
+                // Ba'zi WebView'larda speak() jim tursa, foydalanuvchiga bildiramiz
+                setTimeout(() => { if (!spoke) signalTapWithoutSound(); }, 600);
+            } catch (e) {
+                signalTapWithoutSound();
+            }
+        }
+
+        // Na MP3, na TTS ishlamasa — hech bo'lmasa vibratsiya bilan bildiramiz
+        function signalTapWithoutSound() {
+            try {
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                } else if (navigator.vibrate) {
+                    navigator.vibrate(80);
+                }
             } catch (e) {}
         }
 
+        // Bu funksiya har doim onclick ichida, TO'G'RIDAN-TO'G'RI (sinxron)
+        // chaqirilishi kerak — shundagina "user gesture" saqlanib qoladi.
         function speakWord(enWord) {
             const item = data.find(w => w.en.toLowerCase() === enWord.toLowerCase());
             if (!item) return;
 
-            const cachedUrl = audioCache[item.en];
-            if (cachedUrl) {
-                const audio = new Audio(cachedUrl);
-                const playPromise = audio.play();
+            if (item.broken || !item.audioEl) {
+                speakFallbackTTS(item.en);
+                return;
+            }
+
+            try {
+                const el = item.audioEl;
+                el.currentTime = 0;
+                const playPromise = el.play();
                 if (playPromise && playPromise.catch) {
                     playPromise.catch(() => speakFallbackTTS(item.en));
                 }
-            } else {
+            } catch (e) {
                 speakFallbackTTS(item.en);
             }
         }

@@ -84,14 +84,6 @@
         .go-score { font-size: 15px; font-weight: 700; color: #777; margin-bottom: 15px; }
 
         .sound-hint { font-size: 12px; color: #999; margin-top: 12px; }
-
-        /* Yangi bo'limlar uchun qo'shimcha stillar */
-        .match-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
-        .match-card { background: #f0f9ff; border: 2px solid #bde3fc; border-bottom-width: 4px; border-radius: 12px; padding: 12px 4px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 58px; display: flex; align-items: center; justify-content: center; text-align: center; word-break: break-word; color: #1899d6; }
-        .match-card.matched { background: #d7ffb8; border-color: #58cc02; color: #2b7a0b; cursor: default; }
-        .match-card:disabled { cursor: default; }
-        .stat-row { display: flex; justify-content: space-between; align-items: center; background: #f7f7f7; padding: 14px; margin: 8px 0; border-radius: 16px; border: 2px solid #e5e5e5; border-bottom-width: 4px; text-align: left; }
-        .stat-pct { font-weight: 800; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -103,12 +95,10 @@
         <button class="menu-btn" style="background:#58cc02" onclick="go(2)">🎮 Test O'yini</button>
         <button class="menu-btn" style="background:#ce82ff" onclick="go(3)">✏️ Spelling Test</button>
         <button class="menu-btn" style="background:#00b8d4" onclick="go(7)">🎧 Eshitib topish</button>
-        <button class="menu-btn" style="background:#3ddc97" onclick="go(8)">🧩 Moslashtirish o'yini</button>
-        <button class="menu-btn" style="background:#7c83fd" onclick="go(9)">📊 Statistika</button>
         <div class="sound-hint">Agar birinchi safar ovoz chiqmasa, ekranga bir marta teging va qayta urinib ko'ring.</div>
         <button class="menu-btn" style="background:#1cb0f6; margin-top:8px;" onclick="testTTS()">🔊 Ovozni tekshirish</button>
         <div class="sound-hint" id="tts-test-result"></div>
-        <button class="menu-btn" id="open-external-btn" style="background:#4b4b4b; margin-top:8px; font-size:14px; display:none;" onclick="openInExternalBrowser()">🌐 Tashqi brauzerda ochish (ovoz chiqmasa)</button>
+        <button class="menu-btn" id="open-external-btn" style="background:#4b4b4b; margin-top:8px; font-size:14px;" onclick="openInExternalBrowser()">🌐 Tashqi brauzerda ochish (ovoz chiqmasa)</button>
     </div>
 
     <div class="container hidden" id="game-container">
@@ -196,8 +186,10 @@
         function testTTS() {
             const resultEl = document.getElementById('tts-test-result');
             if (!('speechSynthesis' in window)) {
-                resultEl.textContent = '❌ Bu qurilma/brauzerda ovoz sintezi (TTS) umuman qo\'llab-quvvatlanmaydi.';
+                resultEl.textContent = "❌ Bu qurilma/brauzerda TTS umuman yo'q. Pastdagi \"🌐 Tashqi brauzerda ochish\" tugmasini bosing — u yordam beradi.";
                 resultEl.style.color = '#ea2b2b';
+                const extBtn = document.getElementById('open-external-btn');
+                if (extBtn) extBtn.style.display = 'block';
                 signalTapWithoutSound();
                 return;
             }
@@ -402,8 +394,6 @@
                 else if (m === 5) renderSingleCard();
                 else if (m === 6) startGoMode();
                 else if (m === 7) { qs.sort(() => Math.random() - 0.5); renderListenQ(); }
-                else if (m === 8) startMatchMode();
-                else if (m === 9) renderStats();
                 else { qs.sort(() => Math.random() - 0.5); renderQ(); }
             }
         }
@@ -501,11 +491,9 @@
             if (ans === q.en) {
                 score++;
                 correctList.push(q.uz);
-                recordStat(q.en, true);
                 fb.innerHTML = `<div class="feedback" style="background:#d7ffb8; color:#2b7a0b;">✅ To'g'ri!</div>`;
             } else {
                 errs.push(`${q.uz}: "${ans}" (xato) -> ${q.en} (to'g'ri)`);
-                recordStat(q.en, false);
                 fb.innerHTML = `<div class="feedback" style="background:#ffdfe0; color:#ea2b2b;">❌ Xato! To'g'ri javob: ${q.en}</div>`;
             }
             document.getElementById('next-btn').textContent = "Keyingisi";
@@ -652,131 +640,15 @@
             if (selectedAns === q.uz) {
                 score++;
                 correctList.push(q.en);
-                recordStat(q.en, true);
                 fb.innerHTML = `<div class="feedback" style="background:#d7ffb8; color:#2b7a0b;">✅ To'g'ri!</div>`;
             } else {
                 errs.push(`${q.en}: "${selectedAns}" (xato) -> ${q.uz} (to'g'ri)`);
-                recordStat(q.en, false);
                 fb.innerHTML = `<div class="feedback" style="background:#ffdfe0; color:#ea2b2b;">❌ Xato! To'g'ri javob: ${q.uz}</div>`;
             }
             document.querySelectorAll('.test-btn').forEach(b => b.disabled = true);
             document.getElementById('check-btn').classList.add('hidden');
             document.getElementById('next-btn').textContent = idx === qs.length - 1 ? "Yakunlash" : "Keyingisi";
             document.getElementById('next-btn').classList.remove('hidden');
-        }
-
-        /* ============================================================
-           "MOSLASHTIRISH O'YINI" (Matching / Memory Game)
-           Kartalarni ag'darib, inglizcha so'zni o'zbekcha tarjimasi
-           bilan juftlash.
-           ============================================================ */
-
-        let matchCards = [];
-        let matchFlipped = [];
-        let matchMatchedCount = 0;
-        let matchMoves = 0;
-        let matchLock = false;
-
-        function startMatchMode() {
-            matchMoves = 0;
-            matchMatchedCount = 0;
-            matchFlipped = [];
-            matchLock = false;
-            let cards = [];
-            data.forEach((w, i) => {
-                cards.push({ uid: 'en' + i, key: w.en, label: w.en, kind: 'en', flipped: false, matched: false });
-                cards.push({ uid: 'uz' + i, key: w.en, label: w.uz, kind: 'uz', flipped: false, matched: false });
-            });
-            matchCards = cards.sort(() => Math.random() - 0.5);
-            document.getElementById('next-btn').classList.add('hidden');
-            renderMatchBoard();
-        }
-
-        function renderMatchBoard() {
-            document.getElementById('content-area').innerHTML = `
-                <div class="go-score">🧩 Juftliklar: ${matchMatchedCount}/${data.length}  |  Urinishlar: ${matchMoves}</div>
-                <div class="match-grid" id="match-grid">
-                    ${matchCards.map(c => `
-                        <button class="match-card ${c.matched ? 'matched' : ''}" onclick="flipCard('${c.uid}')" ${c.matched ? 'disabled' : ''}>
-                            ${(c.flipped || c.matched) ? c.label : '❓'}
-                        </button>`).join('')}
-                </div>`;
-            document.getElementById('feedback-area').innerHTML = '';
-        }
-
-        function flipCard(uid) {
-            if (matchLock) return;
-            const card = matchCards.find(c => c.uid === uid);
-            if (!card || card.matched || card.flipped) return;
-            card.flipped = true;
-            matchFlipped.push(card);
-            renderMatchBoard();
-            if (matchFlipped.length === 2) {
-                matchMoves++;
-                matchLock = true;
-                const [a, b] = matchFlipped;
-                if (a.key === b.key && a.kind !== b.kind) {
-                    a.matched = true; b.matched = true;
-                    matchMatchedCount++;
-                    matchFlipped = [];
-                    matchLock = false;
-                    renderMatchBoard();
-                    if (matchMatchedCount === data.length) {
-                        setTimeout(endMatchMode, 400);
-                    }
-                } else {
-                    setTimeout(() => {
-                        a.flipped = false; b.flipped = false;
-                        matchFlipped = [];
-                        matchLock = false;
-                        renderMatchBoard();
-                    }, 700);
-                }
-            }
-        }
-
-        function endMatchMode() {
-            document.getElementById('content-area').innerHTML = `
-                <h2>🧩 Barcha juftliklar topildi!</h2>
-                <div style="font-size:18px; margin:20px 0;">Jami urinishlar: <b>${matchMoves}</b></div>
-                <button class="menu-btn" style="background:#3ddc97" onclick="go(8)">🔁 Qayta o'ynash</button>
-                <button class="menu-btn" style="background:#58cc02" onclick="go(0)">Menyu</button>`;
-            document.getElementById('feedback-area').innerHTML = '';
-        }
-
-        /* ============================================================
-           STATISTIKA
-           Har bir so'z bo'yicha to'g'ri/xato javoblar ushbu SEANS
-           davomida hisoblanadi (Test O'yini, Spelling Test va Eshitib
-           topish rejimlaridan yig'iladi). Sahifa qayta yuklansa,
-           statistika 0'dan boshlanadi — saqlash uchun serverga ulanish
-           kerak bo'ladi.
-           ============================================================ */
-
-        const wordStats = {};
-        data.forEach(w => { wordStats[w.en] = { correct: 0, wrong: 0 }; });
-
-        function recordStat(en, isCorrect) {
-            if (!wordStats[en]) wordStats[en] = { correct: 0, wrong: 0 };
-            if (isCorrect) wordStats[en].correct++;
-            else wordStats[en].wrong++;
-        }
-
-        function renderStats() {
-            document.getElementById('next-btn').classList.add('hidden');
-            const rows = data.map(w => {
-                const s = wordStats[w.en];
-                const total = s.correct + s.wrong;
-                const pct = total ? Math.round((s.correct / total) * 100) : null;
-                const color = pct === null ? '#999' : (pct >= 70 ? '#2b7a0b' : pct >= 40 ? '#ff9600' : '#ea2b2b');
-                const label = pct === null ? 'hali sinalmagan' : `${pct}% (${s.correct}/${total})`;
-                return `<div class="stat-row"><b>${w.en} - ${w.uz}</b><span class="stat-pct" style="color:${color};">${label}</span></div>`;
-            }).join('');
-            document.getElementById('content-area').innerHTML = `
-                <h2 style="margin:15px 0;">📊 Statistika</h2>
-                <div class="sound-hint" style="margin-bottom:12px;">Faqat shu seans uchun — sahifa qayta yuklansa, tozalanadi.</div>
-                ${rows}`;
-            document.getElementById('feedback-area').innerHTML = '';
         }
     </script>
 </body>

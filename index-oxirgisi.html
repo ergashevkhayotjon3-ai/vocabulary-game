@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Inson Tana A'zolari</title>
+    <meta name="color-scheme" content="light only">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Rasmiy Telegram Web App SDK. Agar sahifa Telegram tashqarisida
+         (oddiy brauzerda) ochilsa ham xato bermaydi — pastda tekshirib
+         ishlatiladi. -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root { color-scheme: light; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
+
+        /* Google Apps Script kontentni iframe ichida ko'rsatadi va uning
+           balandligini sahifa kontentiga qarab AVTOMATIK o'lchaydi. Shu
+           sabab html/body balandligi ISHONCHLI tarzda to'liq ekran
+           balandligiga teng bo'lishi shart — aks holda pastda Google'ning
+           o'z (qorong'i) foni ko'rinib qoladi. 100dvh (dynamic viewport
+           height) mobil brauzerlarning manzil panelini hisobga oladi,
+           100vh esa qadimiyroq brauzerlar uchun zaxira sifatida qoldirilgan. */
+        html {
+            background-color: #f7f7f7;
+            width: 100%;
+            min-height: 100%;
+        }
+        body {
+            width: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background-color: #f7f7f7;
+            color: #3c3c3c;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 10px;
+        }
+        .container { width: 100%; max-width: 600px; background: #ffffff; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 20px; margin: 10px auto; text-align: center; }
+        h1 { color: #58cc02; margin-bottom: 20px; font-size: 24px; }
+        .menu-btn { display: block; width: 100%; padding: 16px; margin: 12px 0; font-size: 17px; font-weight: 700; border: none; border-radius: 16px; cursor: pointer; color: white; transition: 0.15s; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+        .menu-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+        .back-btn {
+            position: fixed;
+            right: 18px;
+            bottom: calc(18px + env(safe-area-inset-bottom));
+            background: #e5e5e5;
+            color: #4b4b4b;
+            border: none;
+            padding: 14px 22px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+            z-index: 50;
+        }
+        .back-btn:active { background: #d8d8d8; transform: scale(0.97); }
+        .q-text { font-size: 22px; font-weight: 800; margin: 30px 0; color: #4b4b4b; }
+        .spell-input { width: 100%; padding: 18px; font-size: 20px; border: 2px solid #e5e5e5; border-radius: 16px; margin-bottom: 20px; text-align: center; }
+        .check-btn { background: #58cc02; color: white; border: none; border-bottom: 4px solid #46a302; width: 100%; padding: 16px; font-size: 18px; font-weight: 800; border-radius: 16px; cursor: pointer; margin-top: 10px; }
+        .feedback { font-size: 18px; font-weight: 700; margin: 15px 0; padding: 15px; border-radius: 12px; }
+        .vocab-item { display: flex; justify-content: space-between; align-items: center; background: #f7f7f7; padding: 14px; margin: 8px 0; border-radius: 16px; border: 2px solid #e5e5e5; border-bottom-width: 4px; text-align: left; }
+        .speak-btn { background: #ff4b4b; color: white; border: none; padding: 10px 16px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 15px; min-width: 44px; min-height: 44px; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .test-btn { background: white; border: 2px solid #e5e5e5; border-radius: 16px; padding: 18px; font-size: 17px; font-weight: 600; cursor: pointer; transition: 0.15s; border-bottom: 4px solid #e5e5e5; }
+        .test-btn:hover { background: #f0f9ff; border-color: #1cb0f6; }
+        .test-btn.selected { background: #ddf4ff; border-color: #1cb0f6; color: #1899d6; border-bottom: 4px solid #1cb0f6; }
+        .test-btn:disabled { cursor: default; opacity: 0.95; }
+
+        .img-item { font-size: 36px; margin-right: 12px; }
+
+        .card-box { background: #f7f7f7; border: 2px solid #e5e5e5; border-bottom: 4px solid #e5e5e5; border-radius: 20px; padding: 30px; margin: 20px 0; text-align: center; }
+        .card-icon { font-size: 70px; margin-bottom: 15px; }
+        .card-word { font-size: 24px; font-weight: 800; color: #3c3c3c; margin-bottom: 5px; }
+        .card-uz { font-size: 18px; font-weight: 600; color: #777; margin-bottom: 20px; }
+
+        .go-timer-bar-wrap { width: 100%; height: 10px; background: #e5e5e5; border-radius: 6px; margin-bottom: 15px; overflow: hidden; }
+        .go-timer-bar { height: 100%; background: #58cc02; transition: width 1s linear; }
+        .go-score { font-size: 15px; font-weight: 700; color: #777; margin-bottom: 15px; }
+
+        .sound-hint { font-size: 12px; color: #999; margin-top: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="main-menu">
+        <h1>Inson Tana A'zolari</h1>
+        <button class="menu-btn" style="background:#ff9600" onclick="go(4)">🖼️ Rasimli Lug'at</button>
+        <button class="menu-btn" style="background:#2b82ff" onclick="go(5)">🃏 Dona-dona Rasimli Lug'at</button>
+        <button class="menu-btn" style="background:#58cc02" onclick="go(2)">🎮 Test O'yini</button>
+        <button class="menu-btn" style="background:#ce82ff" onclick="go(3)">✏️ Spelling Test</button>
+        <button class="menu-btn" style="background:#00b8d4" onclick="go(7)">🎧 Eshitib topish</button>
+        <div class="sound-hint">Agar birinchi safar ovoz chiqmasa, ekranga bir marta teging va qayta urinib ko'ring.</div>
+        <div class="sound-hint" id="redirect-status"></div>
+    </div>
+
+    <div class="container hidden" id="game-container">
+        <button class="back-btn" onclick="go(0)">← Menyu</button>
+        <div id="content-area" style="padding-bottom: 75px;"></div>
+        <div id="feedback-area"></div>
+        <button class="check-btn hidden" id="next-btn" onclick="nextQuestion()">Keyingisi</button>
+    </div>
+
+    <script>
+        /* ============================================================
+           MA'LUMOTLAR BAZASI
+           Har bir so'z uchun: en, uz, icon (emoji), audio (asl inson
+           talaffuzi bilan yozilgan MP3 manzili).
+           ============================================================ */
+        const data = [
+            { en: "Head",   uz: "Bosh",   icon: "🧠", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/head-us.mp3" },
+            { en: "Eye",    uz: "Ko'z",   icon: "👁️", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/eye-us.mp3" },
+            { en: "Ear",    uz: "Quloq",  icon: "👂", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/ear-us.mp3" },
+            { en: "Nose",   uz: "Burun",  icon: "👃", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/nose-us.mp3" },
+            { en: "Mouth",  uz: "Og'iz",  icon: "👄", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/mouth-us.mp3" },
+            { en: "Hand",   uz: "Qo'l",   icon: "✋", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/hand-us.mp3" },
+            { en: "Leg",    uz: "Oyoq",   icon: "🦵", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/leg-us.mp3" },
+            { en: "Tooth",  uz: "Tish",   icon: "🦷", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/tooth-us.mp3" },
+            { en: "Hair",   uz: "Soch",   icon: "👱", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/hair-us.mp3" },
+            { en: "Finger", uz: "Barmoq", icon: "👆", audio: "https://api.dictionaryapi.dev/media/pronunciations/en/finger-us.mp3" }
+        ];
+
+        let mode, idx, score, errs, correctList, qs, selectedAns;
+        let goScore, goTimeLeft, goCurrent, goInterval, goDuration;
+
+        /* ============================================================
+           BARCHA QURILMALAR UCHUN ISHONCHLI OVOZ TIZIMI
+           ------------------------------------------------------------
+           Strategiya (3 bosqichli, hech qachon jim qolmaslik uchun):
+
+           1) ASOSIY: haqiqiy inson talaffuzi bilan yozilgan MP3 —
+              har bir so'z uchun sahifa yuklanishi bilan haqiqiy
+              <audio> DOM elementi yaratiladi (fetch/blob EMAS —
+              chunki fetch() ko'p WebView'larda CORS/tarmoq
+              siyosati bilan bloklanadi, <audio> esa bunday
+              tekshiruvdan o'tishi shart emas). Bu barcha zamonaviy
+              brauzerlarda (Safari/iPhone, Chrome/Android, PC,
+              shu jumladan Xiaomi/Huawei kabi qurilmalarning o'z
+              brauzerlarida) ishlaydigan standart HTML5 audio.
+
+           2) ZAXIRA: agar biror sababdan MP3 ishlamasa — qurilmaning
+              o'rnatilgan Text-to-Speech (speechSynthesis) tizimi
+              orqali so'z talaffuz qilinadi. Eng tabiiy ("Natural"/
+              "Neural"/"Google" nomli) ovoz avtomatik tanlanadi.
+
+           3) OXIRGI ZAXIRA: na MP3, na TTS ishlamasa (masalan, ba'zi
+              arzon qurilmalarda TTS umuman o'rnatilmagan bo'lishi
+              mumkin) — foydalanuvchiga vibratsiya orqali bosilgani
+              bildiriladi, shunda u hech bo'lmasa tugma ishlaganini
+              biladi.
+           ============================================================ */
+
+        // Telegram Web App SDK'ni xavfsiz initsializatsiya qilish
+        // (Telegram tashqarisida ochilsa, bu blok shunchaki e'tiborsiz qoladi)
+        if (window.Telegram && window.Telegram.WebApp) {
+            try {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            } catch (e) { /* jim o'tkazamiz */ }
+        }
+
+        // Ba'zi qurilmalarda (masalan iPhone'ning jismoniy ovozsiz tugmasi
+        // yoqilgan bo'lsa, yoki ba'zi Android WebView'lar media'ni umuman
+        // qo'llab-quvvatlamasa) veb-sahifa darajasida ovozni tuzatib
+        // bo'lmaydi. Shu sabab, botga kirgandanoq AVTOMATIK tarzda tashqi
+        // brauzerga o'tishga harakat qilamiz — foydalanuvchi hech narsa
+        // bosishi shart emas. Agar bu o'tish IMKONI umuman bo'lmasa (ya'ni
+        // "openLink" funksiyasi mavjud emas), avtomatik urinish qilinmaydi,
+        // pastda tushuntirish chiqadi va ilova baribir ISHLASHDA DAVOM ETADI
+        // (faqat ovozsiz holatda).
+        function autoRedirectToExternalBrowser() {
+            const statusEl = document.getElementById('redirect-status');
+            if (!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData)) {
+                return; // Telegram ichida emasmiz — hech narsa qilinmaydi
+            }
+            if (window.Telegram.WebApp.openLink) {
+                try {
+                    window.Telegram.WebApp.openLink(window.location.href, { try_instant_view: false });
+                } catch (e) {
+                    if (statusEl) {
+                        statusEl.textContent = "Siz tashqi brauzerga o'ta olmadingiz, shu sababli ovozi chiqmasligi mumkin.";
+                    }
+                }
+            } else {
+                if (statusEl) {
+                    statusEl.textContent = "Siz tashqi brauzerga o'ta olmadingiz, shu sababli ovozi chiqmasligi mumkin.";
+                }
+            }
+            // Muhim: yuqoridagi holatlarning hech biri ilovaning davom etishiga
+            // to'sqinlik qilmaydi — foydalanuvchi ovozsiz bo'lsa ham barcha
+            // bo'limlardan (Test O'yini, Spelling Test va h.k.) foydalanishda
+            // davom etaveradi.
+        }
+        autoRedirectToExternalBrowser();
+
+        // Har bir so'z uchun haqiqiy <audio> elementini oldindan yaratamiz
+        const audioHolder = document.createElement('div');
+        audioHolder.style.display = 'none';
+        document.body.appendChild(audioHolder);
+
+        data.forEach(item => {
+            const el = document.createElement('audio');
+            el.src = item.audio;
+            el.preload = 'auto';
+            el.setAttribute('playsinline', '');
+            el.setAttribute('webkit-playsinline', '');
+            el.addEventListener('error', () => { item.broken = true; });
+            audioHolder.appendChild(el);
+            item.audioEl = el;
+        });
+
+        // Birinchi tegishda/bosishda barcha audio elementlarni "uyg'otish" —
+        // iOS Safari va Android WebView'larning media-sessiyasini
+        // faollashtiradi (ovozsiz tarzda tez play+pause qilish orqali).
+        let audioUnlocked = false;
+        function unlockAudioOnce() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            data.forEach(item => {
+                const el = item.audioEl;
+                if (!el) return;
+                const prevVolume = el.volume;
+                el.volume = 0;
+                const p = el.play();
+                if (p && p.then) {
+                    p.then(() => {
+                        el.pause();
+                        el.currentTime = 0;
+                        el.volume = prevVolume;
+                    }).catch(() => { el.volume = prevVolume; });
+                } else {
+                    el.volume = prevVolume;
+                }
+            });
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+                // Ba'zi Android WebView'larda TTS motori birinchi
+                // haqiqiy speak() chaqiruvida "uxlab qolgan" bo'ladi va
+                // jim turadi. Shu sabab, birinchi tegishda juda past
+                // ovozda (deyarli eshitilmas) qisqa so'z aytib, motorni
+                // oldindan "isitib" qo'yamiz.
+                try {
+                    const warmup = new SpeechSynthesisUtterance(' ');
+                    warmup.volume = 0.01;
+                    warmup.rate = 10;
+                    window.speechSynthesis.speak(warmup);
+                } catch (e) {}
+            }
+        }
+        document.addEventListener('touchstart', unlockAudioOnce, { once: true, passive: true });
+        document.addEventListener('click', unlockAudioOnce, { once: true });
+
+        // Eng tabiiy eshitiladigan ovozni avtomatik tanlash (faqat zaxira
+        // TTS uchun kerak bo'lganda ishlatiladi).
+        let cachedVoices = [];
+        function refreshVoices() {
+            if ('speechSynthesis' in window) {
+                cachedVoices = window.speechSynthesis.getVoices() || [];
+            }
+        }
+        refreshVoices();
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = refreshVoices;
+        }
+
+        function pickBestVoice() {
+            if (!cachedVoices.length) refreshVoices();
+            const englishVoices = cachedVoices.filter(v => (v.lang || '').toLowerCase().startsWith('en'));
+            if (!englishVoices.length) return null;
+            const rank = v => {
+                const name = (v.name || '').toLowerCase();
+                if (/natural|neural|wavenet/.test(name)) return 0;
+                if (/google/.test(name)) return 1;
+                if ((v.lang || '').toLowerCase() === 'en-us') return 2;
+                return 3;
+            };
+            return englishVoices.sort((a, b) => rank(a) - rank(b))[0];
+        }
+
+        function speakFallbackTTS(word) {
+            if (!('speechSynthesis' in window) || !window.speechSynthesis) {
+                signalTapWithoutSound();
+                return;
+            }
+            try {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(word);
+                const bestVoice = pickBestVoice();
+                if (bestVoice) utter.voice = bestVoice;
+                utter.lang = 'en-US';
+                utter.rate = 0.9;
+                utter.pitch = 1;
+                let spoke = false;
+                utter.onstart = () => { spoke = true; };
+                window.speechSynthesis.speak(utter);
+                setTimeout(() => { if (!spoke) signalTapWithoutSound(); }, 600);
+            } catch (e) {
+                signalTapWithoutSound();
+            }
+        }
+
+        function signalTapWithoutSound() {
+            try {
+                if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                } else if (navigator.vibrate) {
+                    navigator.vibrate(80);
+                }
+            } catch (e) {}
+        }
+
+        // Bu funksiya har doim onclick ichida, TO'G'RIDAN-TO'G'RI (sinxron)
+        // chaqirilishi kerak — shundagina "foydalanuvchi ishorasi"
+        // (user gesture) saqlanib qoladi va audio bloklanmaydi.
+        function speakWord(enWord) {
+            const item = data.find(w => w.en.toLowerCase() === enWord.toLowerCase());
+            if (!item) return;
+
+            if (item.broken || !item.audioEl) {
+                speakFallbackTTS(item.en);
+                return;
+            }
+
+            try {
+                const el = item.audioEl;
+                el.currentTime = 0;
+                const playPromise = el.play();
+                if (playPromise && playPromise.catch) {
+                    playPromise.catch(() => speakFallbackTTS(item.en));
+                }
+            } catch (e) {
+                speakFallbackTTS(item.en);
+            }
+        }
+
+        /* ============================================================
+           MENYU VA REJIMLAR
+           ------------------------------------------------------------
+           Telefonning tizim darajasidagi "Orqaga qaytarish" tugmasi
+           (yoki Android'dagi orqaga qaytarish gesture'i) bosilganda,
+           ilova butunlay yopilib ketmasdan, avval menyuga qaytishi
+           uchun brauzer tarixi (history) bilan ishlaymiz.
+           ============================================================ */
+
+        let historyPushed = false;
+
+        function showView(m) {
+            clearInterval(goInterval); // boshqa rejimga o'tganda "Go" taymerini to'xtatamiz
+            if (m === 0) {
+                document.getElementById('main-menu').classList.remove('hidden');
+                document.getElementById('game-container').classList.add('hidden');
+            } else {
+                document.getElementById('main-menu').classList.add('hidden');
+                document.getElementById('game-container').classList.remove('hidden');
+                mode = m; idx = 0; score = 0; errs = []; correctList = []; qs = [...data];
+                if (m === 1) renderVocab();
+                else if (m === 4) renderImgVocab();
+                else if (m === 5) renderSingleCard();
+                else if (m === 6) startGoMode();
+                else if (m === 7) { qs.sort(() => Math.random() - 0.5); renderListenQ(); }
+                else { qs.sort(() => Math.random() - 0.5); renderQ(); }
+            }
+        }
+
+        // Menyu/tugmalar shu funksiyani chaqiradi — bu tarix (history) bilan ishlaydi
+        function go(m) {
+            if (m === 0) {
+                if (historyPushed) {
+                    // "history.back()" popstate hodisasini ishga tushiradi,
+                    // u esa showView(0)'ni chaqiradi (pastga qarang)
+                    history.back();
+                } else {
+                    showView(0);
+                }
+            } else {
+                if (!historyPushed) {
+                    history.pushState({ appView: 'game' }, '');
+                    historyPushed = true;
+                }
+                showView(m);
+            }
+        }
+
+        // Telefon/brauzerning tizim "Orqaga" tugmasi yoki gesture'i bosilganda
+        window.addEventListener('popstate', () => {
+            historyPushed = false;
+            showView(0);
+        });
+
+        function renderVocab() {
+            document.getElementById('content-area').innerHTML = '<h2 style="margin:15px 0;">Lug\'at</h2>' + data.map(w => `<div class="vocab-item"><b>${w.en} - ${w.uz}</b> <button class="speak-btn" onclick="speakWord('${w.en}')">🔊</button></div>`).join('');
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function renderImgVocab() {
+            document.getElementById('content-area').innerHTML = '<h2 style="margin:15px 0;">Rasimli Lug\'at</h2>' + data.map(w => `<div class="vocab-item"><span class="img-item">${w.icon}</span> <b>${w.en} - ${w.uz}</b> <button class="speak-btn" onclick="speakWord('${w.en}')">🔊</button></div>`).join('');
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function renderSingleCard() {
+            document.getElementById('feedback-area').innerHTML = '';
+            if (idx >= qs.length) {
+                document.getElementById('content-area').innerHTML = `<h2>Tugatdingiz!</h2><button class="menu-btn" style="background:#58cc02; margin-top:20px;" onclick="go(0)">Menyu</button>`;
+                document.getElementById('next-btn').classList.add('hidden');
+                return;
+            }
+            const q = qs[idx];
+            document.getElementById('content-area').innerHTML = `
+                <h2 style="margin:15px 0;">Dona-dona Rasimli Lug'at (${idx + 1}/${qs.length})</h2>
+                <div class="card-box">
+                    <div class="card-icon">${q.icon}</div>
+                    <div class="card-word">${q.en}</div>
+                    <div class="card-uz">${q.uz}</div>
+                    <button class="speak-btn" style="padding: 10px 20px; font-size: 16px;" onclick="speakWord('${q.en}')">🔊 Talaffuz</button>
+                </div>`;
+            document.getElementById('next-btn').textContent = idx === qs.length - 1 ? "Tugatish" : "Keyingisi";
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function renderQ() {
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+            if (idx >= qs.length) return showRes();
+            const q = qs[idx];
+            let html = `<div class="q-text">"${q.uz}" - inglizchada nima deyiladi?</div>`;
+            if (mode === 2) {
+                let wrong = data.filter(x => x.en !== q.en).sort(() => Math.random() - 0.5).slice(0, 3);
+                let opts = [q.en, ...wrong.map(x => x.en)].sort(() => Math.random() - 0.5);
+                html += `<div class="options-grid">` + opts.map(o => `<button class="test-btn" onclick="selectOpt(this, '${o}')">${o}</button>`).join('') + `</div>
+                         <button class="check-btn" id="check-btn" onclick="checkTest()">TEKSHIRISH</button>`;
+            } else {
+                html += `<input type="text" id="inp" class="spell-input" placeholder="Inglizcha yozing...">
+                         <button class="check-btn" id="check-btn" onclick="checkSpell()">TEKSHIRISH</button>`;
+            }
+            document.getElementById('content-area').innerHTML = html;
+        }
+
+        function selectOpt(btn, val) {
+            document.querySelectorAll('.test-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedAns = val;
+        }
+
+        function checkTest() {
+            if (!selectedAns) return alert("Iltimos, javobni tanlang!");
+            check(selectedAns);
+            document.getElementById('check-btn').classList.add('hidden');
+        }
+
+        function check(ans) {
+            const q = qs[idx];
+            const fb = document.getElementById('feedback-area');
+            if (ans === q.en) {
+                score++;
+                correctList.push(q.uz);
+                fb.innerHTML = `<div class="feedback" style="background:#d7ffb8; color:#2b7a0b;">✅ To'g'ri!</div>`;
+            } else {
+                errs.push(`${q.uz}: "${ans}" (xato) -> ${q.en} (to'g'ri)`);
+                fb.innerHTML = `<div class="feedback" style="background:#ffdfe0; color:#ea2b2b;">❌ Xato! To'g'ri javob: ${q.en}</div>`;
+            }
+            document.getElementById('next-btn').textContent = "Keyingisi";
+            document.getElementById('next-btn').classList.remove('hidden');
+            if (mode === 2) document.querySelectorAll('.test-btn').forEach(b => b.disabled = true);
+            else document.getElementById('check-btn').classList.add('hidden');
+        }
+
+        function checkSpell() {
+            const val = document.getElementById('inp').value.trim();
+            check(val.toLowerCase() === qs[idx].en.toLowerCase() ? qs[idx].en : val);
+        }
+
+        function nextQuestion() {
+            idx++;
+            selectedAns = null;
+            if (mode === 5) renderSingleCard();
+            else if (mode === 7) renderListenQ();
+            else renderQ();
+        }
+
+        function showRes() {
+            document.getElementById('content-area').innerHTML = `
+                <h2>Test Natijalari</h2>
+                <div style="font-size:18px; margin:20px 0;">
+                    <p>Umumiy savollar: <b>${qs.length}</b></p>
+                    <p style="color:#2b7a0b;">To'g'ri: <b>${score}</b></p>
+                    <p style="color:#ea2b2b;">Xato: <b>${qs.length - score}</b></p>
+                </div>
+                <div style="text-align:left; margin:20px 0;">
+                    ${correctList.length > 0 ? `<div style="margin-bottom:10px;">✅ <b>To'g'ri javoblar:</b> ${correctList.join(', ')}</div>` : ''}
+                    ${errs.map(e => `<div style="color:#ea2b2b; margin:5px 0;">❌ ${e}</div>`).join('')}
+                </div>
+                <button class="menu-btn" style="background:#58cc02" onclick="go(0)">Menyu</button>`;
+            document.getElementById('feedback-area').innerHTML = '';
+        }
+
+        /* ============================================================
+           "GO" REJIMI — 30 soniyalik tezkor test
+           ============================================================ */
+
+        function startGoMode() {
+            document.getElementById('next-btn').classList.add('hidden');
+            goScore = 0;
+            goDuration = 30;
+            goTimeLeft = goDuration;
+            goCurrent = null;
+            renderGoQuestion();
+            clearInterval(goInterval);
+            goInterval = setInterval(() => {
+                goTimeLeft--;
+                if (goTimeLeft <= 0) {
+                    clearInterval(goInterval);
+                    endGoMode();
+                } else {
+                    updateGoTimerUI();
+                }
+            }, 1000);
+        }
+
+        function updateGoTimerUI() {
+            const bar = document.getElementById('go-timer-bar');
+            const label = document.getElementById('go-timer-label');
+            if (bar) bar.style.width = Math.max(0, (goTimeLeft / goDuration) * 100) + '%';
+            if (label) label.textContent = `⏱️ ${goTimeLeft}s  |  ✅ ${goScore}`;
+        }
+
+        function pickRandomWord(excludeEn) {
+            let pool = data;
+            if (data.length > 1 && excludeEn) pool = data.filter(w => w.en !== excludeEn);
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function renderGoQuestion() {
+            const q = pickRandomWord(goCurrent ? goCurrent.en : null);
+            goCurrent = q;
+            let wrong = data.filter(x => x.en !== q.en).sort(() => Math.random() - 0.5).slice(0, 3);
+            let opts = [q.en, ...wrong.map(x => x.en)].sort(() => Math.random() - 0.5);
+            document.getElementById('content-area').innerHTML = `
+                <div class="go-timer-bar-wrap"><div class="go-timer-bar" id="go-timer-bar" style="width:${(goTimeLeft / goDuration) * 100}%;"></div></div>
+                <div class="go-score" id="go-timer-label">⏱️ ${goTimeLeft}s  |  ✅ ${goScore}</div>
+                <div class="q-text">"${q.uz}" - inglizchada nima deyiladi?</div>
+                <div class="options-grid" id="go-options">${opts.map(o => `<button class="test-btn" onclick="answerGo(this,'${o}')">${o}</button>`).join('')}</div>`;
+            document.getElementById('feedback-area').innerHTML = '';
+        }
+
+        function answerGo(btn, val) {
+            if (goTimeLeft <= 0) return;
+            document.querySelectorAll('#go-options .test-btn').forEach(b => b.disabled = true);
+            const correct = val === goCurrent.en;
+            if (correct) {
+                goScore++;
+                btn.style.background = '#d7ffb8'; btn.style.borderColor = '#58cc02';
+            } else {
+                btn.style.background = '#ffdfe0'; btn.style.borderColor = '#ff4b4b';
+                document.querySelectorAll('#go-options .test-btn').forEach(b => {
+                    if (b.textContent === goCurrent.en) { b.style.background = '#d7ffb8'; b.style.borderColor = '#58cc02'; }
+                });
+            }
+            updateGoTimerUI();
+            setTimeout(() => { if (goTimeLeft > 0) renderGoQuestion(); }, 500);
+        }
+
+        function endGoMode() {
+            document.getElementById('content-area').innerHTML = `
+                <h2>⚡ Go natijasi!</h2>
+                <div style="font-size:20px; margin:20px 0;">
+                    <p>To'g'ri javoblar soni: <b style="color:#2b7a0b;">${goScore}</b></p>
+                </div>
+                <button class="menu-btn" style="background:#ff4b4b" onclick="go(6)">🔁 Qayta urinish</button>
+                <button class="menu-btn" style="background:#58cc02" onclick="go(0)">Menyu</button>`;
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        /* ============================================================
+           "ESHITIB TOPISH" REJIMI (Listening Mode)
+           So'z ko'rsatilmaydi — faqat ovoz eshittiriladi, foydalanuvchi
+           to'g'ri o'zbekcha tarjimani 4 variantdan tanlaydi.
+           ============================================================ */
+
+        function renderListenQ() {
+            if (idx >= qs.length) return showRes();
+            const q = qs[idx];
+            let wrong = data.filter(x => x.en !== q.en).sort(() => Math.random() - 0.5).slice(0, 3);
+            let opts = [q.uz, ...wrong.map(x => x.uz)].sort(() => Math.random() - 0.5);
+            document.getElementById('content-area').innerHTML = `
+                <div class="q-text">🎧 Eshiting va to'g'ri tarjimani tanlang</div>
+                <div style="text-align:center; margin-bottom:20px;">
+                    <button class="speak-btn" style="padding:14px 26px; font-size:18px;" onclick="speakWord('${q.en}')">🔊 Qayta eshitish</button>
+                </div>
+                <div class="options-grid">${opts.map(o => `<button class="test-btn" onclick="selectOpt(this, '${o.replace(/'/g, "\\'")}')">${o}</button>`).join('')}</div>
+                <button class="check-btn" id="check-btn" onclick="checkListen()">TEKSHIRISH</button>`;
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+            // Savol chiqishi bilan ovozni avtomatik eshittirish
+            setTimeout(() => speakWord(q.en), 300);
+        }
+
+        function checkListen() {
+            if (!selectedAns) return alert("Iltimos, javobni tanlang!");
+            const q = qs[idx];
+            const fb = document.getElementById('feedback-area');
+            if (selectedAns === q.uz) {
+                score++;
+                correctList.push(q.en);
+                fb.innerHTML = `<div class="feedback" style="background:#d7ffb8; color:#2b7a0b;">✅ To'g'ri!</div>`;
+            } else {
+                errs.push(`${q.en}: "${selectedAns}" (xato) -> ${q.uz} (to'g'ri)`);
+                fb.innerHTML = `<div class="feedback" style="background:#ffdfe0; color:#ea2b2b;">❌ Xato! To'g'ri javob: ${q.uz}</div>`;
+            }
+            document.querySelectorAll('.test-btn').forEach(b => b.disabled = true);
+            document.getElementById('check-btn').classList.add('hidden');
+            document.getElementById('next-btn').textContent = idx === qs.length - 1 ? "Yakunlash" : "Keyingisi";
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

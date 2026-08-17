@@ -173,12 +173,29 @@
         // "openLink" funksiyasi mavjud emas), avtomatik urinish qilinmaydi,
         // pastda tushuntirish chiqadi va ilova baribir ISHLASHDA DAVOM ETADI
         // (faqat ovozsiz holatda).
+        // Biz haqiqatan Telegram ichidamizmi — buni faqat "initData"ga
+        // qarab aniqlab bo'lmaydi, chunki u ba'zan Telegram ichida bo'lsak
+        // ham BO'SH QATOR bo'lishi mumkin. Shuningdek, agar Telegram'ning
+        // rasmiy SDK skripti sekin internet tufayli yuklanmay qolsa ham
+        // aniqlay olishimiz uchun, brauzerning "User-Agent"ini ham
+        // MUSTAQIL ravishda (window.Telegram'ga bog'liq bo'lmagan holda)
+        // tekshiramiz.
+        function isInsideTelegram() {
+            if (navigator.userAgent && navigator.userAgent.indexOf('Telegram') !== -1) return true;
+            if (window.Telegram && window.Telegram.WebApp) {
+                const wa = window.Telegram.WebApp;
+                if (wa.initData && wa.initData.length > 0) return true;
+                if (wa.platform && wa.platform !== 'unknown') return true;
+            }
+            return false;
+        }
+
         function autoRedirectToExternalBrowser() {
             const statusEl = document.getElementById('redirect-status');
-            if (!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData)) {
+            if (!isInsideTelegram()) {
                 return; // Telegram ichida emasmiz — hech narsa qilinmaydi
             }
-            if (window.Telegram.WebApp.openLink) {
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
                 try {
                     window.Telegram.WebApp.openLink(window.location.href, { try_instant_view: false });
                 } catch (e) {
@@ -187,6 +204,8 @@
                     }
                 }
             } else {
+                // Telegram ichidamiz, lekin SDK hali tayyor emas yoki
+                // o'tish funksiyasi mavjud emas
                 if (statusEl) {
                     statusEl.textContent = "Siz tashqi brauzerga o'ta olmadingiz, shu sababli ovozi chiqmasligi mumkin.";
                 }
@@ -196,7 +215,7 @@
             // bo'limlardan (Test O'yini, Spelling Test va h.k.) foydalanishda
             // davom etaveradi.
         }
-        autoRedirectToExternalBrowser();
+        setTimeout(autoRedirectToExternalBrowser, 50);
 
         // Har bir so'z uchun haqiqiy <audio> elementini oldindan yaratamiz
         const audioHolder = document.createElement('div');

@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // Har qanday JS xatosini ekranda ko'rsatish (konsolsiz diagnostika uchun)
+        window.onerror = function(message, source, lineno, colno, error) {
+            var banner = document.createElement('div');
+            banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ea2b2b;color:white;padding:14px;font-family:monospace;font-size:13px;z-index:99999;white-space:pre-wrap;';
+            banner.textContent = '❌ JS XATO: ' + message + ' (qator: ' + lineno + ')';
+            document.body ? document.body.prepend(banner) : window.addEventListener('DOMContentLoaded', function(){ document.body.prepend(banner); });
+            return false;
+        };
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ingliz tili — So'z boyligi</title>
+    <meta name="color-scheme" content="light only">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { color-scheme: light; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
+
+        /* Google Apps Script kontentni iframe ichida ko'rsatadi va uning
+           balandligini sahifa kontentiga qarab AVTOMATIK o'lchaydi. Shu
+           sabab html/body balandligi ISHONCHLI tarzda to'liq ekran
+           balandligiga teng bo'lishi shart — aks holda pastda Google'ning
+           o'z (qorong'i) foni ko'rinib qoladi. 100dvh (dynamic viewport
+           height) mobil brauzerlarning manzil panelini hisobga oladi,
+           100vh esa qadimiyroq brauzerlar uchun zaxira sifatida qoldirilgan. */
+        html {
+            background-color: #f7f7f7;
+            width: 100%;
+            min-height: 100%;
+        }
+        body {
+            width: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background-color: #f7f7f7;
+            color: #3c3c3c;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 10px;
+        }
+        .container { width: 100%; max-width: 600px; background: #ffffff; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 20px; margin: 10px auto; text-align: center; }
+        h1 { color: #58cc02; margin-bottom: 20px; font-size: 24px; }
+        .menu-btn { display: block; width: 100%; padding: 16px; margin: 12px 0; font-size: 17px; font-weight: 700; border: none; border-radius: 16px; cursor: pointer; color: white; transition: 0.15s; box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+        .menu-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.1); }
+        .topic-btn { padding: 12px; margin: 6px 0; font-size: 15px; }
+        .topic-cat { text-align: left; color: #999; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin: 18px 0 4px 4px; }
+        .hidden { display: none !important; }
+        .back-btn {
+            position: fixed;
+            right: 18px;
+            bottom: calc(18px + env(safe-area-inset-bottom));
+            background: #e5e5e5;
+            color: #4b4b4b;
+            border: none;
+            padding: 14px 22px;
+            border-radius: 30px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+            z-index: 50;
+        }
+        .back-btn:active { background: #d8d8d8; transform: scale(0.97); }
+        .q-text { font-size: 22px; font-weight: 800; margin: 30px 0; color: #4b4b4b; }
+        .spell-input { width: 100%; padding: 18px; font-size: 20px; border: 2px solid #e5e5e5; border-radius: 16px; margin-bottom: 20px; text-align: center; }
+        .check-btn { background: #58cc02; color: white; border: none; border-bottom: 4px solid #46a302; width: 100%; padding: 16px; font-size: 18px; font-weight: 800; border-radius: 16px; cursor: pointer; margin-top: 10px; }
+        .feedback { font-size: 18px; font-weight: 700; margin: 15px 0; padding: 15px; border-radius: 12px; }
+        .vocab-item { display: flex; justify-content: space-between; align-items: center; background: #f7f7f7; padding: 14px; margin: 8px 0; border-radius: 16px; border: 2px solid #e5e5e5; border-bottom-width: 4px; text-align: left; }
+        .speak-btn { background: #ff4b4b; color: white; border: none; padding: 10px 16px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 15px; min-width: 44px; min-height: 44px; }
+
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .test-btn { background: white; border: 2px solid #e5e5e5; border-radius: 16px; padding: 18px; font-size: 17px; font-weight: 600; cursor: pointer; transition: 0.15s; border-bottom: 4px solid #e5e5e5; }
+        .test-btn:hover { background: #f0f9ff; border-color: #1cb0f6; }
+        .test-btn.selected { background: #ddf4ff; border-color: #1cb0f6; color: #1899d6; border-bottom: 4px solid #1cb0f6; }
+        .test-btn:disabled { cursor: default; opacity: 0.95; }
+
+        .img-item { font-size: 36px; margin-right: 12px; }
+
+        .card-box { background: #f7f7f7; border: 2px solid #e5e5e5; border-bottom: 4px solid #e5e5e5; border-radius: 20px; padding: 30px; margin: 20px 0; text-align: center; }
+        .card-icon { font-size: 70px; margin-bottom: 15px; }
+        .card-word { font-size: 24px; font-weight: 800; color: #3c3c3c; margin-bottom: 5px; }
+        .card-uz { font-size: 18px; font-weight: 600; color: #777; margin-bottom: 20px; }
+
+        .go-timer-bar-wrap { width: 100%; height: 10px; background: #e5e5e5; border-radius: 6px; margin-bottom: 15px; overflow: hidden; }
+        .go-timer-bar { height: 100%; background: #58cc02; transition: width 1s linear; }
+        .go-score { font-size: 15px; font-weight: 700; color: #777; margin-bottom: 15px; }
+
+        .sound-hint { font-size: 12px; color: #999; margin-top: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="topic-select">
+        <h1>Mavzuni tanlang</h1>
+
+        <h2 class="topic-cat">👤 Inson</h2>
+        <button class="menu-btn topic-btn" style="background:#58cc02" onclick="selectTopic('body')">🧠 Tana a'zolari</button>
+        <button class="menu-btn topic-btn" style="background:#58cc02" onclick="selectTopic('face')">😀 Yuz va tashqi ko'rinish</button>
+        <button class="menu-btn topic-btn" style="background:#58cc02" onclick="selectTopic('family')">👨‍👩‍👧 Oila a'zolari</button>
+
+        <h2 class="topic-cat">🔢 Sonlar va shakllar</h2>
+        <button class="menu-btn topic-btn" style="background:#1cb0f6" onclick="selectTopic('numbers1')">🔢 Sonlar (1–20)</button>
+        <button class="menu-btn topic-btn" style="background:#1cb0f6" onclick="selectTopic('numbers2')">🔢 Sonlar (20–100)</button>
+        <button class="menu-btn topic-btn" style="background:#1cb0f6" onclick="selectTopic('colors')">🎨 Ranglar</button>
+        <button class="menu-btn topic-btn" style="background:#1cb0f6" onclick="selectTopic('shapes')">🔺 Shakllar</button>
+
+        <h2 class="topic-cat">🕐 Vaqt</h2>
+        <button class="menu-btn topic-btn" style="background:#ff9600" onclick="selectTopic('days')">📅 Kunlar va oylar</button>
+        <button class="menu-btn topic-btn" style="background:#ff9600" onclick="selectTopic('time')">🕐 Fasllar va vaqt</button>
+
+        <h2 class="topic-cat">🍎 Ovqat</h2>
+        <button class="menu-btn topic-btn" style="background:#ff4b4b" onclick="selectTopic('food')">🍽️ Ovqatlar</button>
+        <button class="menu-btn topic-btn" style="background:#ff4b4b" onclick="selectTopic('fruitveg')">🍎 Mevalar va sabzavotlar</button>
+        <button class="menu-btn topic-btn" style="background:#ff4b4b" onclick="selectTopic('drinks')">🥤 Ichimliklar</button>
+        <button class="menu-btn topic-btn" style="background:#ff4b4b" onclick="selectTopic('kitchen')">🍽️ Oshxona buyumlari</button>
+
+        <h2 class="topic-cat">🏠 Uy</h2>
+        <button class="menu-btn topic-btn" style="background:#2b82ff" onclick="selectTopic('rooms')">🏠 Uy xonalari</button>
+        <button class="menu-btn topic-btn" style="background:#2b82ff" onclick="selectTopic('furniture')">🛋️ Mebel va uy jihozlari</button>
+        <button class="menu-btn topic-btn" style="background:#2b82ff" onclick="selectTopic('clothes')">👕 Kiyim-kechak</button>
+        <button class="menu-btn topic-btn" style="background:#2b82ff" onclick="selectTopic('shoes')">👞 Poyabzal va aksessuarlar</button>
+
+        <h2 class="topic-cat">💼 Jamiyat</h2>
+        <button class="menu-btn topic-btn" style="background:#ce82ff" onclick="selectTopic('jobs')">💼 Kasblar</button>
+        <button class="menu-btn topic-btn" style="background:#ce82ff" onclick="selectTopic('school')">🏫 Maktab va ta'lim buyumlari</button>
+        <button class="menu-btn topic-btn" style="background:#ce82ff" onclick="selectTopic('cityplaces')">🏙️ Shahar joylari</button>
+        <button class="menu-btn topic-btn" style="background:#ce82ff" onclick="selectTopic('transport')">🚗 Transport vositalari</button>
+        <button class="menu-btn topic-btn" style="background:#ce82ff" onclick="selectTopic('directions')">🧭 Yo'nalish so'zlari</button>
+
+        <h2 class="topic-cat">🌦️ Tabiat</h2>
+        <button class="menu-btn topic-btn" style="background:#00b8d4" onclick="selectTopic('weather')">☀️ Ob-havo</button>
+        <button class="menu-btn topic-btn" style="background:#00b8d4" onclick="selectTopic('nature')">🏞️ Tabiat va landshaft</button>
+        <button class="menu-btn topic-btn" style="background:#00b8d4" onclick="selectTopic('pets')">🐶 Uy hayvonlari</button>
+        <button class="menu-btn topic-btn" style="background:#00b8d4" onclick="selectTopic('wildanimals')">🦁 Yovvoyi hayvonlar</button>
+
+        <h2 class="topic-cat">⚽ Bo'sh vaqt</h2>
+        <button class="menu-btn topic-btn" style="background:#3ddc97" onclick="selectTopic('sports')">⚽ Sport turlari</button>
+        <button class="menu-btn topic-btn" style="background:#3ddc97" onclick="selectTopic('hobbies')">🎨 Hobbi va mashg'ulotlar</button>
+        <button class="menu-btn topic-btn" style="background:#3ddc97" onclick="selectTopic('emotions')">😊 His-tuyg'ular</button>
+        <button class="menu-btn topic-btn" style="background:#3ddc97" onclick="selectTopic('character')">🌟 Shaxsiy sifatlar</button>
+    </div>
+
+    <div class="container hidden" id="main-menu">
+        <h1 id="topic-title">Mavzu</h1>
+        <button class="menu-btn" style="background:#ff9600" onclick="go(4)">🖼️ Rasimli Lug'at</button>
+        <button class="menu-btn" style="background:#2b82ff" onclick="go(5)">🃏 Dona-dona Rasimli Lug'at</button>
+        <button class="menu-btn" style="background:#58cc02" onclick="go(2)">🎮 Test O'yini</button>
+        <button class="menu-btn" style="background:#ce82ff" onclick="go(3)">✏️ Spelling Test</button>
+        <button class="menu-btn" style="background:#00b8d4" onclick="go(7)">🎧 Eshitib topish</button>
+        <button class="menu-btn" style="background:#999; font-size:14px;" onclick="goToTopicSelect()">🔄 Mavzuni almashtirish</button>
+        <div class="sound-hint">Agar birinchi safar ovoz chiqmasa, ekranga bir marta teging va qayta urinib ko'ring.</div>
+    </div>
+
+    <div class="container hidden" id="game-container">
+        <button class="back-btn" onclick="go(0)">← Menyu</button>
+        <div id="content-area" style="padding-bottom: 75px;"></div>
+        <div id="feedback-area"></div>
+        <button class="check-btn hidden" id="next-btn" onclick="nextQuestion()">Keyingisi</button>
+    </div>
+
+    <script>
+        /* ============================================================
+           MA'LUMOTLAR BAZASI — bir nechta MAVZU
+           Har bir so'z uchun: en, uz, icon (emoji), audio (inson
+           talaffuzi bilan yozilgan MP3 manzili — ishlamasa, kod
+           avtomatik TTS/vibratsiyaga o'tadi).
+           `data` — hozir tanlangan mavzuning faol massivi. Butun
+           qolgan kod shu nomga murojaat qiladi, shu sabab mavzu
+           almashtirish shunchaki `data`ni qayta tayinlash bilan
+           amalga oshadi.
+           ============================================================ */
+        function mp3(word) {
+            return `https://api.dictionaryapi.dev/media/pronunciations/en/${word.toLowerCase()}-us.mp3`;
+        }
+
+        const topics = {
+            body: { title: "🧠 Tana a'zolari", words: [
+                { en: "Head", uz: "Bosh", icon: "🧠" },
+                { en: "Eye", uz: "Ko'z", icon: "👁️" },
+                { en: "Ear", uz: "Quloq", icon: "👂" },
+                { en: "Nose", uz: "Burun", icon: "👃" },
+                { en: "Mouth", uz: "Og'iz", icon: "👄" },
+                { en: "Hand", uz: "Qo'l", icon: "✋" },
+                { en: "Leg", uz: "Oyoq", icon: "🦵" },
+                { en: "Tooth", uz: "Tish", icon: "🦷" },
+                { en: "Hair", uz: "Soch", icon: "👱" },
+                { en: "Finger", uz: "Barmoq", icon: "👆" },
+                { en: "Neck", uz: "Bo'yin", icon: "🔹" },
+                { en: "Shoulder", uz: "Yelka", icon: "🔹" },
+                { en: "Back", uz: "Orqa", icon: "🔹" },
+                { en: "Chest", uz: "Ko'krak", icon: "🔹" },
+                { en: "Stomach", uz: "Qorin", icon: "🔹" },
+                { en: "Arm", uz: "Bilak", icon: "💪" },
+                { en: "Knee", uz: "Tizza", icon: "🔹" },
+                { en: "Foot", uz: "Oyoq kafti", icon: "🦶" },
+                { en: "Elbow", uz: "Tirsak", icon: "🔹" },
+                { en: "Lip", uz: "Lab", icon: "👄" },
+                { en: "Tongue", uz: "Til", icon: "👅" },
+                { en: "Chin", uz: "Iyak", icon: "🔹" },
+                { en: "Eyebrow", uz: "Qosh", icon: "🔹" },
+                { en: "Cheek", uz: "Yonoq", icon: "🔹" },
+                { en: "Skin", uz: "Teri", icon: "🔹" }
+            ]},
+            face: { title: "😀 Yuz va tashqi ko'rinish", words: [
+                { en: "Face", uz: "Yuz", icon: "🙂" },
+                { en: "Forehead", uz: "Peshona", icon: "🔹" },
+                { en: "Eyelash", uz: "Kipik", icon: "🔹" },
+                { en: "Beard", uz: "Soqol", icon: "🧔" },
+                { en: "Moustache", uz: "Mo'ylov", icon: "🔹" },
+                { en: "Tall", uz: "Baland bo'yli", icon: "🔹" },
+                { en: "Short", uz: "Past bo'yli", icon: "🔹" },
+                { en: "Beautiful", uz: "Chiroyli", icon: "😍" },
+                { en: "Handsome", uz: "Kelishgan", icon: "😎" },
+                { en: "Young", uz: "Yosh", icon: "🧑" },
+                { en: "Old", uz: "Qari", icon: "👴" },
+                { en: "Fat", uz: "Semiz", icon: "🔹" },
+                { en: "Thin", uz: "Ozg'in", icon: "🔹" },
+                { en: "Strong", uz: "Kuchli", icon: "💪" },
+                { en: "Weak", uz: "Ojiz", icon: "🔹" }
+            ]},
+            family: { title: "👨‍👩‍👧 Oila a'zolari", words: [
+                { en: "Mother", uz: "Ona", icon: "👩" },
+                { en: "Father", uz: "Ota", icon: "👨" },
+                { en: "Sister", uz: "Opa-singil", icon: "👧" },
+                { en: "Brother", uz: "Aka-uka", icon: "👦" },
+                { en: "Grandmother", uz: "Buvi", icon: "👵" },
+                { en: "Grandfather", uz: "Bobo", icon: "👴" },
+                { en: "Son", uz: "O'g'il", icon: "🧒" },
+                { en: "Daughter", uz: "Qiz", icon: "👧" },
+                { en: "Aunt", uz: "Xola/Amma", icon: "👩" },
+                { en: "Uncle", uz: "Amaki/Tog'a", icon: "👨" },
+                { en: "Wife", uz: "Xotin", icon: "👰" },
+                { en: "Husband", uz: "Er", icon: "🤵" },
+                { en: "Baby", uz: "Chaqaloq", icon: "👶" },
+                { en: "Child", uz: "Bola", icon: "🧒" },
+                { en: "Parents", uz: "Ota-ona", icon: "👨‍👩‍👧" },
+                { en: "Cousin", uz: "Amakivachcha", icon: "🔹" },
+                { en: "Family", uz: "Oila", icon: "👨‍👩‍👧‍👦" },
+                { en: "Twin", uz: "Egizak", icon: "🔹" },
+                { en: "Nephew", uz: "Jiyan (o'g'il)", icon: "🔹" },
+                { en: "Niece", uz: "Jiyan (qiz)", icon: "🔹" }
+            ]},
+            numbers1: { title: "🔢 Sonlar (1–20)", words: [
+                { en: "One", uz: "Bir", icon: "1️⃣" },
+                { en: "Two", uz: "Ikki", icon: "2️⃣" },
+                { en: "Three", uz: "Uch", icon: "3️⃣" },
+                { en: "Four", uz: "To'rt", icon: "4️⃣" },
+                { en: "Five", uz: "Besh", icon: "5️⃣" },
+                { en: "Six", uz: "Olti", icon: "6️⃣" },
+                { en: "Seven", uz: "Yetti", icon: "7️⃣" },
+                { en: "Eight", uz: "Sakkiz", icon: "8️⃣" },
+                { en: "Nine", uz: "To'qqiz", icon: "9️⃣" },
+                { en: "Ten", uz: "O'n", icon: "🔟" },
+                { en: "Eleven", uz: "O'n bir", icon: "🔢" },
+                { en: "Twelve", uz: "O'n ikki", icon: "🔢" },
+                { en: "Thirteen", uz: "O'n uch", icon: "🔢" },
+                { en: "Fourteen", uz: "O'n to'rt", icon: "🔢" },
+                { en: "Fifteen", uz: "O'n besh", icon: "🔢" },
+                { en: "Sixteen", uz: "O'n olti", icon: "🔢" },
+                { en: "Seventeen", uz: "O'n yetti", icon: "🔢" },
+                { en: "Eighteen", uz: "O'n sakkiz", icon: "🔢" },
+                { en: "Nineteen", uz: "O'n to'qqiz", icon: "🔢" },
+                { en: "Twenty", uz: "Yigirma", icon: "🔢" }
+            ]},
+            numbers2: { title: "🔢 Sonlar (20–100)", words: [
+                { en: "Thirty", uz: "O'ttiz", icon: "🔢" },
+                { en: "Forty", uz: "Qirq", icon: "🔢" },
+                { en: "Fifty", uz: "Ellik", icon: "🔢" },
+                { en: "Sixty", uz: "Oltmish", icon: "🔢" },
+                { en: "Seventy", uz: "Etmish", icon: "🔢" },
+                { en: "Eighty", uz: "Sakson", icon: "🔢" },
+                { en: "Ninety", uz: "To'qson", icon: "🔢" },
+                { en: "Hundred", uz: "Yuz", icon: "💯" },
+                { en: "First", uz: "Birinchi", icon: "🥇" },
+                { en: "Second", uz: "Ikkinchi", icon: "🥈" },
+                { en: "Third", uz: "Uchinchi", icon: "🥉" },
+                { en: "Fourth", uz: "To'rtinchi", icon: "🔹" },
+                { en: "Fifth", uz: "Beshinchi", icon: "🔹" },
+                { en: "Sixth", uz: "Oltinchi", icon: "🔹" },
+                { en: "Seventh", uz: "Yettinchi", icon: "🔹" },
+                { en: "Eighth", uz: "Sakkizinchi", icon: "🔹" },
+                { en: "Ninth", uz: "To'qqizinchi", icon: "🔹" },
+                { en: "Tenth", uz: "O'ninchi", icon: "🔹" },
+                { en: "Last", uz: "Oxirgi", icon: "🔹" },
+                { en: "Next", uz: "Keyingi", icon: "🔹" }
+            ]},
+            colors: { title: "🎨 Ranglar", words: [
+                { en: "Red", uz: "Qizil", icon: "🔴" },
+                { en: "Blue", uz: "Ko'k", icon: "🔵" },
+                { en: "Green", uz: "Yashil", icon: "🟢" },
+                { en: "Yellow", uz: "Sariq", icon: "🟡" },
+                { en: "Black", uz: "Qora", icon: "⚫" },
+                { en: "White", uz: "Oq", icon: "⚪" },
+                { en: "Orange", uz: "To'q sariq", icon: "🟠" },
+                { en: "Purple", uz: "Binafsha", icon: "🟣" },
+                { en: "Pink", uz: "Pushti", icon: "🩷" },
+                { en: "Brown", uz: "Jigarrang", icon: "🟤" },
+                { en: "Gray", uz: "Kulrang", icon: "🔘" },
+                { en: "Gold", uz: "Oltin rang", icon: "🟨" }
+            ]},
+            shapes: { title: "🔺 Shakllar", words: [
+                { en: "Circle", uz: "Doira", icon: "⭕" },
+                { en: "Square", uz: "Kvadrat", icon: "⬜" },
+                { en: "Triangle", uz: "Uchburchak", icon: "🔺" },
+                { en: "Rectangle", uz: "To'rtburchak", icon: "▭" },
+                { en: "Star", uz: "Yulduz", icon: "⭐" },
+                { en: "Heart", uz: "Yurak", icon: "❤️" },
+                { en: "Oval", uz: "Oval", icon: "⬭" },
+                { en: "Diamond", uz: "Romb", icon: "💎" },
+                { en: "Line", uz: "Chiziq", icon: "➖" },
+                { en: "Cross", uz: "Xoch", icon: "➕" }
+            ]},
+            days: { title: "📅 Kunlar va oylar", words: [
+                { en: "Monday", uz: "Dushanba", icon: "📅" },
+                { en: "Tuesday", uz: "Seshanba", icon: "📅" },
+                { en: "Wednesday", uz: "Chorshanba", icon: "📅" },
+                { en: "Thursday", uz: "Payshanba", icon: "📅" },
+                { en: "Friday", uz: "Juma", icon: "📅" },
+                { en: "Saturday", uz: "Shanba", icon: "📅" },
+                { en: "Sunday", uz: "Yakshanba", icon: "📅" },
+                { en: "January", uz: "Yanvar", icon: "🗓️" },
+                { en: "February", uz: "Fevral", icon: "🗓️" },
+                { en: "March", uz: "Mart", icon: "🗓️" },
+                { en: "April", uz: "Aprel", icon: "🗓️" },
+                { en: "May", uz: "May", icon: "🗓️" },
+                { en: "June", uz: "Iyun", icon: "🗓️" },
+                { en: "July", uz: "Iyul", icon: "🗓️" },
+                { en: "August", uz: "Avgust", icon: "🗓️" },
+                { en: "September", uz: "Sentabr", icon: "🗓️" },
+                { en: "October", uz: "Oktabr", icon: "🗓️" },
+                { en: "November", uz: "Noyabr", icon: "🗓️" },
+                { en: "December", uz: "Dekabr", icon: "🗓️" }
+            ]},
+            time: { title: "🕐 Fasllar va vaqt", words: [
+                { en: "Spring", uz: "Bahor", icon: "🌸" },
+                { en: "Summer", uz: "Yoz", icon: "☀️" },
+                { en: "Autumn", uz: "Kuz", icon: "🍂" },
+                { en: "Winter", uz: "Qish", icon: "❄️" },
+                { en: "Today", uz: "Bugun", icon: "🔹" },
+                { en: "Tomorrow", uz: "Ertaga", icon: "🔹" },
+                { en: "Yesterday", uz: "Kecha", icon: "🔹" },
+                { en: "Morning", uz: "Ertalab", icon: "🌅" },
+                { en: "Afternoon", uz: "Peshin", icon: "🌤️" },
+                { en: "Evening", uz: "Kechqurun", icon: "🌆" },
+                { en: "Night", uz: "Tun", icon: "🌙" },
+                { en: "Hour", uz: "Soat", icon: "⏰" },
+                { en: "Minute", uz: "Daqiqa", icon: "⏱️" },
+                { en: "Week", uz: "Hafta", icon: "📆" },
+                { en: "Month", uz: "Oy", icon: "🗓️" }
+            ]},
+            food: { title: "🍽️ Ovqatlar", words: [
+                { en: "Bread", uz: "Non", icon: "🍞" },
+                { en: "Rice", uz: "Guruch", icon: "🍚" },
+                { en: "Meat", uz: "Go'sht", icon: "🥩" },
+                { en: "Soup", uz: "Sho'rva", icon: "🍲" },
+                { en: "Egg", uz: "Tuxum", icon: "🥚" },
+                { en: "Cheese", uz: "Pishloq", icon: "🧀" },
+                { en: "Butter", uz: "Sariyog'", icon: "🧈" },
+                { en: "Salt", uz: "Tuz", icon: "🔹" },
+                { en: "Sugar", uz: "Shakar", icon: "🔹" },
+                { en: "Honey", uz: "Asal", icon: "🍯" },
+                { en: "Fish", uz: "Baliq", icon: "🐟" },
+                { en: "Chicken", uz: "Tovuq go'shti", icon: "🍗" },
+                { en: "Sausage", uz: "Kolbasa", icon: "🌭" },
+                { en: "Salad", uz: "Salat", icon: "🥗" },
+                { en: "Cake", uz: "Tort", icon: "🍰" },
+                { en: "Pizza", uz: "Pitsa", icon: "🍕" },
+                { en: "Sandwich", uz: "Sendvich", icon: "🥪" },
+                { en: "Noodles", uz: "Lag'mon", icon: "🍜" },
+                { en: "Pasta", uz: "Makaron", icon: "🍝" },
+                { en: "Porridge", uz: "Bo'tqa", icon: "🥣" },
+                { en: "Dumpling", uz: "Manti", icon: "🥟" },
+                { en: "Cookie", uz: "Pechenye", icon: "🍪" },
+                { en: "Chocolate", uz: "Shokolad", icon: "🍫" },
+                { en: "Ice cream", uz: "Muzqaymoq", icon: "🍦" },
+                { en: "Oil", uz: "Yog'", icon: "🔹" }
+            ]},
+            fruitveg: { title: "🍎 Mevalar va sabzavotlar", words: [
+                { en: "Apple", uz: "Olma", icon: "🍎" },
+                { en: "Banana", uz: "Banan", icon: "🍌" },
+                { en: "Orange", uz: "Apelsin", icon: "🍊" },
+                { en: "Grape", uz: "Uzum", icon: "🍇" },
+                { en: "Watermelon", uz: "Tarvuz", icon: "🍉" },
+                { en: "Melon", uz: "Qovun", icon: "🍈" },
+                { en: "Pear", uz: "Nok", icon: "🍐" },
+                { en: "Lemon", uz: "Limon", icon: "🍋" },
+                { en: "Strawberry", uz: "Qulupnay", icon: "🍓" },
+                { en: "Cherry", uz: "Gilos", icon: "🍒" },
+                { en: "Peach", uz: "Shaftoli", icon: "🍑" },
+                { en: "Pineapple", uz: "Ananas", icon: "🍍" },
+                { en: "Potato", uz: "Kartoshka", icon: "🥔" },
+                { en: "Tomato", uz: "Pomidor", icon: "🍅" },
+                { en: "Onion", uz: "Piyoz", icon: "🧅" },
+                { en: "Carrot", uz: "Sabzi", icon: "🥕" },
+                { en: "Cucumber", uz: "Bodring", icon: "🥒" },
+                { en: "Cabbage", uz: "Karam", icon: "🥬" },
+                { en: "Pepper", uz: "Qalampir", icon: "🫑" },
+                { en: "Garlic", uz: "Sarimsoq", icon: "🧄" },
+                { en: "Eggplant", uz: "Baqlajon", icon: "🍆" },
+                { en: "Corn", uz: "Makkajo'xori", icon: "🌽" },
+                { en: "Pumpkin", uz: "Qovoq", icon: "🎃" },
+                { en: "Beans", uz: "Loviya", icon: "🔹" },
+                { en: "Mushroom", uz: "Qo'ziqorin", icon: "🍄" }
+            ]},
+            drinks: { title: "🥤 Ichimliklar", words: [
+                { en: "Water", uz: "Suv", icon: "💧" },
+                { en: "Tea", uz: "Choy", icon: "🍵" },
+                { en: "Coffee", uz: "Qahva", icon: "☕" },
+                { en: "Milk", uz: "Sut", icon: "🥛" },
+                { en: "Juice", uz: "Sharbat", icon: "🧃" },
+                { en: "Cola", uz: "Kola", icon: "🥤" },
+                { en: "Green tea", uz: "Ko'k choy", icon: "🍵" },
+                { en: "Mineral water", uz: "Mineral suv", icon: "💧" },
+                { en: "Ayran", uz: "Ayron", icon: "🥛" },
+                { en: "Lemonade", uz: "Limonad", icon: "🥤" },
+                { en: "Compote", uz: "Kompot", icon: "🧃" },
+                { en: "Kefir", uz: "Kefir", icon: "🥛" }
+            ]},
+            kitchen: { title: "🍽️ Oshxona buyumlari", words: [
+                { en: "Plate", uz: "Tarelka", icon: "🍽️" },
+                { en: "Spoon", uz: "Qoshiq", icon: "🥄" },
+                { en: "Fork", uz: "Vilka", icon: "🍴" },
+                { en: "Knife", uz: "Pichoq", icon: "🔪" },
+                { en: "Cup", uz: "Piyola", icon: "☕" },
+                { en: "Glass", uz: "Stakan", icon: "🥛" },
+                { en: "Pot", uz: "Qozon", icon: "🍲" },
+                { en: "Pan", uz: "Tova", icon: "🍳" },
+                { en: "Bowl", uz: "Kosa", icon: "🥣" },
+                { en: "Kettle", uz: "Choynak", icon: "🫖" },
+                { en: "Refrigerator", uz: "Muzlatgich", icon: "🧊" },
+                { en: "Stove", uz: "Plita", icon: "🔥" },
+                { en: "Oven", uz: "Pech", icon: "🔹" },
+                { en: "Microwave", uz: "Mikroto'lqinli pech", icon: "🔹" },
+                { en: "Table", uz: "Stol", icon: "🔹" },
+                { en: "Chair", uz: "Stul", icon: "🪑" },
+                { en: "Napkin", uz: "Salfetka", icon: "🔹" },
+                { en: "Bottle", uz: "Shisha", icon: "🍾" },
+                { en: "Tray", uz: "Podnos", icon: "🔹" },
+                { en: "Cutting board", uz: "Taxta", icon: "🔹" }
+            ]},
+            rooms: { title: "🏠 Uy xonalari", words: [
+                { en: "Kitchen", uz: "Oshxona", icon: "🍳" },
+                { en: "Bedroom", uz: "Yotoqxona", icon: "🛏️" },
+                { en: "Bathroom", uz: "Hammom", icon: "🛁" },
+                { en: "Living room", uz: "Mehmonxona", icon: "🛋️" },
+                { en: "Toilet", uz: "Hojatxona", icon: "🚽" },
+                { en: "Balcony", uz: "Balkon", icon: "🔹" },
+                { en: "Garden", uz: "Bog'", icon: "🌳" },
+                { en: "Yard", uz: "Hovli", icon: "🏡" },
+                { en: "Door", uz: "Eshik", icon: "🚪" },
+                { en: "Window", uz: "Deraza", icon: "🪟" },
+                { en: "Roof", uz: "Tom", icon: "🔹" },
+                { en: "Wall", uz: "Devor", icon: "🧱" }
+            ]},
+            furniture: { title: "🛋️ Mebel va uy jihozlari", words: [
+                { en: "Bed", uz: "Karavot", icon: "🛏️" },
+                { en: "Sofa", uz: "Divan", icon: "🛋️" },
+                { en: "Table", uz: "Stol", icon: "🔹" },
+                { en: "Chair", uz: "Stul", icon: "🪑" },
+                { en: "Wardrobe", uz: "Shkaf", icon: "🚪" },
+                { en: "Shelf", uz: "Tokcha", icon: "🔹" },
+                { en: "Mirror", uz: "Oyna", icon: "🪞" },
+                { en: "Lamp", uz: "Lampa", icon: "💡" },
+                { en: "Carpet", uz: "Gilam", icon: "🔹" },
+                { en: "Curtain", uz: "Parda", icon: "🔹" },
+                { en: "Pillow", uz: "Yostiq", icon: "🔹" },
+                { en: "Blanket", uz: "Ko'rpa", icon: "🔹" },
+                { en: "Clock", uz: "Soat", icon: "🕐" },
+                { en: "TV", uz: "Televizor", icon: "📺" },
+                { en: "Computer", uz: "Kompyuter", icon: "💻" },
+                { en: "Telephone", uz: "Telefon", icon: "📱" },
+                { en: "Washing machine", uz: "Kir yuvish mashinasi", icon: "🔹" },
+                { en: "Vacuum cleaner", uz: "Changyutgich", icon: "🔹" },
+                { en: "Fan", uz: "Ventilyator", icon: "🔹" },
+                { en: "Air conditioner", uz: "Konditsioner", icon: "🔹" }
+            ]},
+            clothes: { title: "👕 Kiyim-kechak", words: [
+                { en: "Shirt", uz: "Ko'ylak", icon: "👕" },
+                { en: "T-shirt", uz: "Futbolka", icon: "👕" },
+                { en: "Trousers", uz: "Shim", icon: "👖" },
+                { en: "Jeans", uz: "Jinsi shim", icon: "👖" },
+                { en: "Dress", uz: "Ko'ylak (ayol)", icon: "👗" },
+                { en: "Skirt", uz: "Yubka", icon: "🔹" },
+                { en: "Jacket", uz: "Kurtka", icon: "🧥" },
+                { en: "Coat", uz: "Palto", icon: "🧥" },
+                { en: "Sweater", uz: "Sviter", icon: "🔹" },
+                { en: "Suit", uz: "Kostyum", icon: "🤵" },
+                { en: "Socks", uz: "Paypoq", icon: "🧦" },
+                { en: "Gloves", uz: "Qo'lqop", icon: "🧤" },
+                { en: "Scarf", uz: "Sharf", icon: "🧣" },
+                { en: "Hat", uz: "Shlyapa", icon: "🎩" },
+                { en: "Cap", uz: "Kepka", icon: "🧢" },
+                { en: "Underwear", uz: "Ichki kiyim", icon: "🔹" },
+                { en: "Pajamas", uz: "Pijama", icon: "🔹" },
+                { en: "Belt", uz: "Kamar", icon: "🔹" },
+                { en: "Tie", uz: "Galstuk", icon: "👔" },
+                { en: "Uniform", uz: "Forma", icon: "🔹" }
+            ]},
+            shoes: { title: "👞 Poyabzal va aksessuarlar", words: [
+                { en: "Shoes", uz: "Poyabzal", icon: "👞" },
+                { en: "Boots", uz: "Etik", icon: "👢" },
+                { en: "Sandals", uz: "Sandal", icon: "🔹" },
+                { en: "Sneakers", uz: "Krossovka", icon: "👟" },
+                { en: "Slippers", uz: "Shippak", icon: "🩴" },
+                { en: "Bag", uz: "Sumka", icon: "👜" },
+                { en: "Backpack", uz: "Ryukzak", icon: "🎒" },
+                { en: "Wallet", uz: "Hamyon", icon: "👛" },
+                { en: "Watch", uz: "Qo'l soati", icon: "⌚" },
+                { en: "Ring", uz: "Uzuk", icon: "💍" },
+                { en: "Necklace", uz: "Marjon", icon: "📿" },
+                { en: "Glasses", uz: "Ko'zoynak", icon: "👓" }
+            ]},
+            jobs: { title: "💼 Kasblar", words: [
+                { en: "Teacher", uz: "O'qituvchi", icon: "👩‍🏫" },
+                { en: "Doctor", uz: "Shifokor", icon: "👨‍⚕️" },
+                { en: "Nurse", uz: "Hamshira", icon: "👩‍⚕️" },
+                { en: "Engineer", uz: "Muhandis", icon: "👷" },
+                { en: "Driver", uz: "Haydovchi", icon: "🚗" },
+                { en: "Police officer", uz: "Politsiyachi", icon: "👮" },
+                { en: "Firefighter", uz: "O'tchi", icon: "👨‍🚒" },
+                { en: "Farmer", uz: "Dehqon", icon: "🧑‍🌾" },
+                { en: "Cook", uz: "Oshpaz", icon: "👨‍🍳" },
+                { en: "Waiter", uz: "Ofitsiant", icon: "🔹" },
+                { en: "Cleaner", uz: "Farrosh", icon: "🔹" },
+                { en: "Builder", uz: "Quruvchi", icon: "👷" },
+                { en: "Lawyer", uz: "Advokat", icon: "🔹" },
+                { en: "Businessman", uz: "Tadbirkor", icon: "🔹" },
+                { en: "Student", uz: "Talaba", icon: "🎓" },
+                { en: "Pupil", uz: "O'quvchi", icon: "🔹" },
+                { en: "Singer", uz: "Qo'shiqchi", icon: "🎤" },
+                { en: "Actor", uz: "Aktyor", icon: "🎭" },
+                { en: "Artist", uz: "Rassom", icon: "🎨" },
+                { en: "Writer", uz: "Yozuvchi", icon: "✍️" },
+                { en: "Journalist", uz: "Jurnalist", icon: "🔹" },
+                { en: "Pilot", uz: "Uchuvchi", icon: "✈️" },
+                { en: "Soldier", uz: "Askar", icon: "🔹" },
+                { en: "Barber", uz: "Sartarosh", icon: "💈" },
+                { en: "Photographer", uz: "Fotograf", icon: "📷" }
+            ]},
+            school: { title: "🏫 Maktab va ta'lim buyumlari", words: [
+                { en: "School", uz: "Maktab", icon: "🏫" },
+                { en: "Book", uz: "Kitob", icon: "📖" },
+                { en: "Notebook", uz: "Daftar", icon: "📓" },
+                { en: "Pen", uz: "Ruchka", icon: "🖊️" },
+                { en: "Pencil", uz: "Qalam", icon: "✏️" },
+                { en: "Eraser", uz: "O'chirg'ich", icon: "🔹" },
+                { en: "Ruler", uz: "Chizg'ich", icon: "📏" },
+                { en: "Backpack", uz: "Maktab sumkasi", icon: "🎒" },
+                { en: "Desk", uz: "Parta", icon: "🔹" },
+                { en: "Board", uz: "Doska", icon: "🔹" },
+                { en: "Chalk", uz: "Bo'r", icon: "🔹" },
+                { en: "Classroom", uz: "Sinf xonasi", icon: "🏫" },
+                { en: "Director", uz: "Direktor", icon: "🔹" },
+                { en: "Exam", uz: "Imtihon", icon: "📝" },
+                { en: "Lesson", uz: "Dars", icon: "🔹" },
+                { en: "Homework", uz: "Uy vazifasi", icon: "🔹" },
+                { en: "Scissors", uz: "Qaychi", icon: "✂️" },
+                { en: "Glue", uz: "Elim", icon: "🔹" },
+                { en: "Calculator", uz: "Kalkulyator", icon: "🧮" },
+                { en: "Map", uz: "Xarita", icon: "🗺️" }
+            ]},
+            cityplaces: { title: "🏙️ Shahar joylari", words: [
+                { en: "Hospital", uz: "Kasalxona", icon: "🏥" },
+                { en: "Shop", uz: "Do'kon", icon: "🏪" },
+                { en: "Market", uz: "Bozor", icon: "🔹" },
+                { en: "Bank", uz: "Bank", icon: "🏦" },
+                { en: "Post office", uz: "Pochta", icon: "🔹" },
+                { en: "Restaurant", uz: "Restoran", icon: "🍽️" },
+                { en: "Cafe", uz: "Kafe", icon: "☕" },
+                { en: "Cinema", uz: "Kinoteatr", icon: "🎬" },
+                { en: "Museum", uz: "Muzey", icon: "🏛️" },
+                { en: "Library", uz: "Kutubxona", icon: "📚" },
+                { en: "Park", uz: "Park", icon: "🌳" },
+                { en: "Zoo", uz: "Hayvonot bog'i", icon: "🦁" },
+                { en: "Airport", uz: "Aeroport", icon: "✈️" },
+                { en: "Train station", uz: "Vokzal", icon: "🚉" },
+                { en: "Bus stop", uz: "Avtobus bekati", icon: "🚏" },
+                { en: "Pharmacy", uz: "Dorixona", icon: "💊" },
+                { en: "Mosque", uz: "Masjid", icon: "🕌" },
+                { en: "Church", uz: "Cherkov", icon: "⛪" },
+                { en: "Stadium", uz: "Stadion", icon: "🏟️" },
+                { en: "Hotel", uz: "Mehmonxona", icon: "🏨" },
+                { en: "Bridge", uz: "Ko'prik", icon: "🌉" },
+                { en: "Street", uz: "Ko'cha", icon: "🛣️" },
+                { en: "Square", uz: "Maydon", icon: "🔹" },
+                { en: "Factory", uz: "Zavod", icon: "🏭" },
+                { en: "Bakery", uz: "Non do'koni", icon: "🥖" }
+            ]},
+            transport: { title: "🚗 Transport vositalari", words: [
+                { en: "Car", uz: "Mashina", icon: "🚗" },
+                { en: "Bus", uz: "Avtobus", icon: "🚌" },
+                { en: "Train", uz: "Poyezd", icon: "🚆" },
+                { en: "Airplane", uz: "Samolyot", icon: "✈️" },
+                { en: "Bicycle", uz: "Velosiped", icon: "🚲" },
+                { en: "Motorcycle", uz: "Mototsikl", icon: "🏍️" },
+                { en: "Taxi", uz: "Taksi", icon: "🚕" },
+                { en: "Truck", uz: "Yuk mashinasi", icon: "🚚" },
+                { en: "Ship", uz: "Kema", icon: "🚢" },
+                { en: "Metro", uz: "Metro", icon: "🚇" },
+                { en: "Tram", uz: "Tramvay", icon: "🚊" },
+                { en: "Helicopter", uz: "Vertolyot", icon: "🚁" },
+                { en: "Boat", uz: "Qayiq", icon: "⛵" },
+                { en: "Scooter", uz: "Skuter", icon: "🛴" },
+                { en: "Ambulance", uz: "Tez yordam", icon: "🚑" }
+            ]},
+            directions: { title: "🧭 Yo'nalish so'zlari", words: [
+                { en: "Left", uz: "Chap", icon: "⬅️" },
+                { en: "Right", uz: "O'ng", icon: "➡️" },
+                { en: "Straight", uz: "To'g'ri", icon: "⬆️" },
+                { en: "Near", uz: "Yaqin", icon: "🔹" },
+                { en: "Far", uz: "Uzoq", icon: "🔹" },
+                { en: "Up", uz: "Yuqori", icon: "🔼" },
+                { en: "Down", uz: "Past", icon: "🔽" },
+                { en: "In front of", uz: "Oldida", icon: "🔹" },
+                { en: "Behind", uz: "Orqasida", icon: "🔹" },
+                { en: "Between", uz: "O'rtasida", icon: "🔹" },
+                { en: "Next to", uz: "Yonida", icon: "🔹" },
+                { en: "Inside", uz: "Ichida", icon: "🔹" },
+                { en: "Outside", uz: "Tashqarida", icon: "🔹" },
+                { en: "North", uz: "Shimol", icon: "🧭" },
+                { en: "South", uz: "Janub", icon: "🧭" }
+            ]},
+            weather: { title: "☀️ Ob-havo", words: [
+                { en: "Sun", uz: "Quyosh", icon: "☀️" },
+                { en: "Rain", uz: "Yomg'ir", icon: "🌧️" },
+                { en: "Snow", uz: "Qor", icon: "❄️" },
+                { en: "Wind", uz: "Shamol", icon: "💨" },
+                { en: "Cloud", uz: "Bulut", icon: "☁️" },
+                { en: "Storm", uz: "Bo'ron", icon: "⛈️" },
+                { en: "Fog", uz: "Tuman", icon: "🌫️" },
+                { en: "Hot", uz: "Issiq", icon: "🔥" },
+                { en: "Cold", uz: "Sovuq", icon: "🥶" },
+                { en: "Warm", uz: "Iliq", icon: "🔹" },
+                { en: "Cool", uz: "Salqin", icon: "🔹" },
+                { en: "Sunny", uz: "Quyoshli", icon: "☀️" },
+                { en: "Rainy", uz: "Yomg'irli", icon: "🌧️" },
+                { en: "Snowy", uz: "Qorli", icon: "❄️" },
+                { en: "Windy", uz: "Shamolli", icon: "💨" }
+            ]},
+            nature: { title: "🏞️ Tabiat va landshaft", words: [
+                { en: "Mountain", uz: "Tog'", icon: "⛰️" },
+                { en: "River", uz: "Daryo", icon: "🏞️" },
+                { en: "Lake", uz: "Ko'l", icon: "🔹" },
+                { en: "Sea", uz: "Dengiz", icon: "🌊" },
+                { en: "Ocean", uz: "Okean", icon: "🌊" },
+                { en: "Forest", uz: "O'rmon", icon: "🌲" },
+                { en: "Tree", uz: "Daraxt", icon: "🌳" },
+                { en: "Flower", uz: "Gul", icon: "🌸" },
+                { en: "Grass", uz: "O't", icon: "🌿" },
+                { en: "Desert", uz: "Sahro", icon: "🏜️" },
+                { en: "Island", uz: "Orol", icon: "🏝️" },
+                { en: "Sky", uz: "Osmon", icon: "🌌" },
+                { en: "Star", uz: "Yulduz", icon: "⭐" },
+                { en: "Moon", uz: "Oy", icon: "🌙" },
+                { en: "Stone", uz: "Tosh", icon: "🔹" },
+                { en: "Sand", uz: "Qum", icon: "🔹" },
+                { en: "Hill", uz: "Tepalik", icon: "🔹" },
+                { en: "Valley", uz: "Vodiy", icon: "🔹" },
+                { en: "Field", uz: "Dala", icon: "🌾" },
+                { en: "Waterfall", uz: "Sharshara", icon: "🔹" }
+            ]},
+            pets: { title: "🐶 Uy hayvonlari", words: [
+                { en: "Cat", uz: "Mushuk", icon: "🐱" },
+                { en: "Dog", uz: "It", icon: "🐶" },
+                { en: "Fish", uz: "Baliqcha", icon: "🐠" },
+                { en: "Bird", uz: "Qush", icon: "🐦" },
+                { en: "Rabbit", uz: "Quyon", icon: "🐰" },
+                { en: "Hamster", uz: "Hamster", icon: "🐹" },
+                { en: "Parrot", uz: "To'tiqush", icon: "🦜" },
+                { en: "Turtle", uz: "Toshbaqa", icon: "🐢" },
+                { en: "Cow", uz: "Sigir", icon: "🐄" },
+                { en: "Horse", uz: "Ot", icon: "🐴" },
+                { en: "Sheep", uz: "Qo'y", icon: "🐑" },
+                { en: "Goat", uz: "Echki", icon: "🐐" },
+                { en: "Chicken", uz: "Tovuq", icon: "🐔" },
+                { en: "Duck", uz: "O'rdak", icon: "🦆" },
+                { en: "Pig", uz: "Cho'chqa", icon: "🐖" }
+            ]},
+            wildanimals: { title: "🦁 Yovvoyi hayvonlar", words: [
+                { en: "Lion", uz: "Sher", icon: "🦁" },
+                { en: "Tiger", uz: "Yo'lbars", icon: "🐯" },
+                { en: "Elephant", uz: "Fil", icon: "🐘" },
+                { en: "Bear", uz: "Ayiq", icon: "🐻" },
+                { en: "Wolf", uz: "Bo'ri", icon: "🐺" },
+                { en: "Fox", uz: "Tulki", icon: "🦊" },
+                { en: "Deer", uz: "Kiyik", icon: "🦌" },
+                { en: "Monkey", uz: "Maymun", icon: "🐒" },
+                { en: "Zebra", uz: "Zebra", icon: "🦓" },
+                { en: "Giraffe", uz: "Jirafa", icon: "🦒" },
+                { en: "Snake", uz: "Ilon", icon: "🐍" },
+                { en: "Crocodile", uz: "Timsoh", icon: "🐊" },
+                { en: "Kangaroo", uz: "Kenguru", icon: "🦘" },
+                { en: "Camel", uz: "Tuya", icon: "🐫" },
+                { en: "Squirrel", uz: "Olmaxon", icon: "🐿️" },
+                { en: "Frog", uz: "Qurbaqa", icon: "🐸" },
+                { en: "Owl", uz: "Boyqush", icon: "🦉" },
+                { en: "Eagle", uz: "Burgut", icon: "🦅" },
+                { en: "Butterfly", uz: "Kapalak", icon: "🦋" },
+                { en: "Bee", uz: "Asalari", icon: "🐝" }
+            ]},
+            sports: { title: "⚽ Sport turlari", words: [
+                { en: "Football", uz: "Futbol", icon: "⚽" },
+                { en: "Basketball", uz: "Basketbol", icon: "🏀" },
+                { en: "Volleyball", uz: "Voleybol", icon: "🏐" },
+                { en: "Tennis", uz: "Tennis", icon: "🎾" },
+                { en: "Swimming", uz: "Suzish", icon: "🏊" },
+                { en: "Running", uz: "Yugurish", icon: "🏃" },
+                { en: "Boxing", uz: "Boks", icon: "🥊" },
+                { en: "Wrestling", uz: "Kurash", icon: "🤼" },
+                { en: "Chess", uz: "Shaxmat", icon: "♟️" },
+                { en: "Cycling", uz: "Velosport", icon: "🚴" },
+                { en: "Skiing", uz: "Chang'i sporti", icon: "⛷️" },
+                { en: "Gymnastics", uz: "Gimnastika", icon: "🤸" },
+                { en: "Yoga", uz: "Yoga", icon: "🧘" },
+                { en: "Golf", uz: "Golf", icon: "⛳" },
+                { en: "Skating", uz: "Konkida uchish", icon: "⛸️" }
+            ]},
+            hobbies: { title: "🎨 Hobbi va mashg'ulotlar", words: [
+                { en: "Reading", uz: "Kitob o'qish", icon: "📖" },
+                { en: "Drawing", uz: "Rasm chizish", icon: "🎨" },
+                { en: "Singing", uz: "Qo'shiq aytish", icon: "🎤" },
+                { en: "Dancing", uz: "Raqsga tushish", icon: "💃" },
+                { en: "Cooking", uz: "Ovqat pishirish", icon: "🍳" },
+                { en: "Traveling", uz: "Sayohat qilish", icon: "✈️" },
+                { en: "Gaming", uz: "O'yin o'ynash", icon: "🎮" },
+                { en: "Photography", uz: "Fotografiya", icon: "📷" },
+                { en: "Gardening", uz: "Bog'dorchilik", icon: "🌱" },
+                { en: "Fishing", uz: "Baliq ovlash", icon: "🎣" },
+                { en: "Camping", uz: "Chodirda dam olish", icon: "⛺" },
+                { en: "Watching movies", uz: "Kino ko'rish", icon: "🎬" },
+                { en: "Listening to music", uz: "Musiqa tinglash", icon: "🎧" },
+                { en: "Shopping", uz: "Xarid qilish", icon: "🛍️" },
+                { en: "Knitting", uz: "To'qish", icon: "🧶" },
+                { en: "Painting", uz: "Bo'yash", icon: "🖌️" },
+                { en: "Collecting", uz: "To'plash", icon: "🔹" },
+                { en: "Writing", uz: "Yozish", icon: "✍️" },
+                { en: "Sleeping", uz: "Uxlash", icon: "😴" },
+                { en: "Walking", uz: "Sayr qilish", icon: "🚶" }
+            ]},
+            emotions: { title: "😊 His-tuyg'ular", words: [
+                { en: "Happy", uz: "Xursand", icon: "😊" },
+                { en: "Sad", uz: "Xafa", icon: "😢" },
+                { en: "Angry", uz: "Jahldor", icon: "😠" },
+                { en: "Afraid", uz: "Qo'rqqan", icon: "😨" },
+                { en: "Surprised", uz: "Hayron", icon: "😲" },
+                { en: "Tired", uz: "Charchagan", icon: "😫" },
+                { en: "Excited", uz: "Hayajonlangan", icon: "🤩" },
+                { en: "Bored", uz: "Zerikkan", icon: "😑" },
+                { en: "Worried", uz: "Xavotirlangan", icon: "😟" },
+                { en: "Nervous", uz: "Asabiy", icon: "😬" },
+                { en: "Proud", uz: "Faxrlangan", icon: "😌" },
+                { en: "Shy", uz: "Uyalgan", icon: "😳" },
+                { en: "Confused", uz: "Sarosimaga tushgan", icon: "😕" },
+                { en: "Relaxed", uz: "Xotirjam", icon: "😌" },
+                { en: "Jealous", uz: "Hasad qiluvchi", icon: "😒" },
+                { en: "Lonely", uz: "Yolg'iz", icon: "😔" },
+                { en: "Confident", uz: "Ishonchli", icon: "😎" },
+                { en: "Grateful", uz: "Minnatdor", icon: "🙏" },
+                { en: "Curious", uz: "Qiziquvchan", icon: "🤔" },
+                { en: "Calm", uz: "Tinch", icon: "😌" }
+            ]},
+            character: { title: "🌟 Shaxsiy sifatlar", words: [
+                { en: "Kind", uz: "Mehribon", icon: "🌟" },
+                { en: "Honest", uz: "Halol", icon: "🔹" },
+                { en: "Friendly", uz: "Do'stona", icon: "🔹" },
+                { en: "Smart", uz: "Aqlli", icon: "🔹" },
+                { en: "Funny", uz: "Kulgili", icon: "😄" },
+                { en: "Brave", uz: "Jasur", icon: "🦸" },
+                { en: "Lazy", uz: "Dangasa", icon: "🔹" },
+                { en: "Hardworking", uz: "Mehnatkash", icon: "🔹" },
+                { en: "Polite", uz: "Odobli", icon: "🔹" },
+                { en: "Rude", uz: "Qo'pol", icon: "🔹" },
+                { en: "Generous", uz: "Saxiy", icon: "🔹" },
+                { en: "Selfish", uz: "Xudbin", icon: "🔹" },
+                { en: "Patient", uz: "Sabrli", icon: "🔹" },
+                { en: "Stubborn", uz: "Qaysar", icon: "🔹" },
+                { en: "Creative", uz: "Ijodkor", icon: "🔹" },
+                { en: "Careful", uz: "Ehtiyotkor", icon: "🔹" },
+                { en: "Careless", uz: "Beparvo", icon: "🔹" },
+                { en: "Talkative", uz: "Gapdon", icon: "🔹" },
+                { en: "Quiet", uz: "Jim", icon: "🔹" },
+                { en: "Strict", uz: "Qattiqqo'l", icon: "🔹" }
+            ]}
+        };
+
+        // Har bir mavzuning har bir so'ziga audio manzilini avtomatik biriktiramiz
+        Object.values(topics).forEach(t => t.words.forEach(w => { w.audio = mp3(w.en); }));
+
+        let currentTopicKey = 'body';
+        let data = topics[currentTopicKey].words; // Faol mavzu — qolgan butun kod shu nomga murojaat qiladi
+
+        function selectTopic(key) {
+            currentTopicKey = key;
+            data = topics[key].words;
+            document.getElementById('topic-title').textContent = topics[key].title;
+            document.getElementById('topic-select').classList.add('hidden');
+            document.getElementById('main-menu').classList.remove('hidden');
+            document.getElementById('game-container').classList.add('hidden');
+            rebuildAudioElements();
+        }
+
+        function goToTopicSelect() {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('game-container').classList.add('hidden');
+            document.getElementById('topic-select').classList.remove('hidden');
+        }
+
+        let mode, idx, score, errs, correctList, qs, selectedAns;
+        let goScore, goTimeLeft, goCurrent, goInterval, goDuration;
+
+        /* ============================================================
+           BARCHA QURILMALAR UCHUN ISHONCHLI OVOZ TIZIMI
+           ------------------------------------------------------------
+           Strategiya (3 bosqichli, hech qachon jim qolmaslik uchun):
+
+           1) ASOSIY: haqiqiy inson talaffuzi bilan yozilgan MP3 —
+              har bir so'z uchun sahifa yuklanishi bilan haqiqiy
+              <audio> DOM elementi yaratiladi (fetch/blob EMAS —
+              chunki fetch() ko'p WebView'larda CORS/tarmoq
+              siyosati bilan bloklanadi, <audio> esa bunday
+              tekshiruvdan o'tishi shart emas). Bu barcha zamonaviy
+              brauzerlarda (Safari/iPhone, Chrome/Android, PC,
+              shu jumladan Xiaomi/Huawei kabi qurilmalarning o'z
+              brauzerlarida) ishlaydigan standart HTML5 audio.
+
+           2) ZAXIRA: agar biror sababdan MP3 ishlamasa — qurilmaning
+              o'rnatilgan Text-to-Speech (speechSynthesis) tizimi
+              orqali so'z talaffuz qilinadi. Eng tabiiy ("Natural"/
+              "Neural"/"Google" nomli) ovoz avtomatik tanlanadi.
+
+           3) OXIRGI ZAXIRA: na MP3, na TTS ishlamasa (masalan, ba'zi
+              arzon qurilmalarda TTS umuman o'rnatilmagan bo'lishi
+              mumkin) — foydalanuvchiga vibratsiya orqali bosilgani
+              bildiriladi, shunda u hech bo'lmasa tugma ishlaganini
+              biladi.
+           ============================================================ */
+
+        // Har bir so'z uchun haqiqiy <audio> elementini yaratamiz.
+        // Mavzu almashtirilganda bu funksiya QAYTA chaqiriladi (eski
+        // elementlar tozalanib, joriy `data` uchun yangilari yaratiladi).
+        const audioHolder = document.createElement('div');
+        audioHolder.style.display = 'none';
+        document.body.appendChild(audioHolder);
+
+        function rebuildAudioElements() {
+            audioHolder.innerHTML = '';
+            data.forEach(item => {
+                const el = document.createElement('audio');
+                el.src = item.audio;
+                el.preload = 'auto';
+                el.setAttribute('playsinline', '');
+                el.setAttribute('webkit-playsinline', '');
+                el.addEventListener('error', () => { item.broken = true; });
+                audioHolder.appendChild(el);
+                item.audioEl = el;
+            });
+        }
+        rebuildAudioElements();
+
+        // Birinchi tegishda/bosishda barcha audio elementlarni "uyg'otish" —
+        // iOS Safari va Android WebView'larning media-sessiyasini
+        // faollashtiradi (ovozsiz tarzda tez play+pause qilish orqali).
+        let audioUnlocked = false;
+        function unlockAudioOnce() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            data.forEach(item => {
+                const el = item.audioEl;
+                if (!el) return;
+                const prevVolume = el.volume;
+                el.volume = 0;
+                const p = el.play();
+                if (p && p.then) {
+                    p.then(() => {
+                        el.pause();
+                        el.currentTime = 0;
+                        el.volume = prevVolume;
+                    }).catch(() => { el.volume = prevVolume; });
+                } else {
+                    el.volume = prevVolume;
+                }
+            });
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+                // Ba'zi Android WebView'larda TTS motori birinchi
+                // haqiqiy speak() chaqiruvida "uxlab qolgan" bo'ladi va
+                // jim turadi. Shu sabab, birinchi tegishda juda past
+                // ovozda (deyarli eshitilmas) qisqa so'z aytib, motorni
+                // oldindan "isitib" qo'yamiz.
+                try {
+                    const warmup = new SpeechSynthesisUtterance(' ');
+                    warmup.volume = 0.01;
+                    warmup.rate = 10;
+                    window.speechSynthesis.speak(warmup);
+                } catch (e) {}
+            }
+        }
+        document.addEventListener('touchstart', unlockAudioOnce, { once: true, passive: true });
+        document.addEventListener('click', unlockAudioOnce, { once: true });
+
+        // Eng tabiiy eshitiladigan ovozni avtomatik tanlash (faqat zaxira
+        // TTS uchun kerak bo'lganda ishlatiladi).
+        let cachedVoices = [];
+        function refreshVoices() {
+            if ('speechSynthesis' in window) {
+                cachedVoices = window.speechSynthesis.getVoices() || [];
+            }
+        }
+        refreshVoices();
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = refreshVoices;
+        }
+
+        function pickBestVoice() {
+            if (!cachedVoices.length) refreshVoices();
+            const englishVoices = cachedVoices.filter(v => (v.lang || '').toLowerCase().startsWith('en'));
+            if (!englishVoices.length) return null;
+            const rank = v => {
+                const name = (v.name || '').toLowerCase();
+                if (/natural|neural|wavenet/.test(name)) return 0;
+                if (/google/.test(name)) return 1;
+                if ((v.lang || '').toLowerCase() === 'en-us') return 2;
+                return 3;
+            };
+            return englishVoices.sort((a, b) => rank(a) - rank(b))[0];
+        }
+
+        function speakFallbackTTS(word) {
+            if (!('speechSynthesis' in window) || !window.speechSynthesis) {
+                signalTapWithoutSound();
+                return;
+            }
+            try {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(word);
+                const bestVoice = pickBestVoice();
+                if (bestVoice) utter.voice = bestVoice;
+                utter.lang = 'en-US';
+                utter.rate = 0.9;
+                utter.pitch = 1;
+                let spoke = false;
+                utter.onstart = () => { spoke = true; };
+                window.speechSynthesis.speak(utter);
+                setTimeout(() => { if (!spoke) signalTapWithoutSound(); }, 600);
+            } catch (e) {
+                signalTapWithoutSound();
+            }
+        }
+
+        function signalTapWithoutSound() {
+            try {
+                if (navigator.vibrate) {
+                    navigator.vibrate(80);
+                }
+            } catch (e) {}
+        }
+
+        // Bu funksiya har doim onclick ichida, TO'G'RIDAN-TO'G'RI (sinxron)
+        // chaqirilishi kerak — shundagina "foydalanuvchi ishorasi"
+        // (user gesture) saqlanib qoladi va audio bloklanmaydi.
+        function speakWord(enWord) {
+            const item = data.find(w => w.en.toLowerCase() === enWord.toLowerCase());
+            if (!item) return;
+
+            if (item.broken || !item.audioEl) {
+                speakFallbackTTS(item.en);
+                return;
+            }
+
+            try {
+                const el = item.audioEl;
+                el.currentTime = 0;
+                const playPromise = el.play();
+                if (playPromise && playPromise.catch) {
+                    playPromise.catch(() => speakFallbackTTS(item.en));
+                }
+            } catch (e) {
+                speakFallbackTTS(item.en);
+            }
+        }
+
+        /* ============================================================
+           MENYU VA REJIMLAR
+           ------------------------------------------------------------
+           Telefonning tizim darajasidagi "Orqaga qaytarish" tugmasi
+           (yoki Android'dagi orqaga qaytarish gesture'i) bosilganda,
+           ilova butunlay yopilib ketmasdan, avval menyuga qaytishi
+           uchun brauzer tarixi (history) bilan ishlaymiz.
+           ============================================================ */
+
+        let historyPushed = false;
+
+        function showView(m) {
+            clearInterval(goInterval); // boshqa rejimga o'tganda "Go" taymerini to'xtatamiz
+            if (m === 0) {
+                document.getElementById('main-menu').classList.remove('hidden');
+                document.getElementById('game-container').classList.add('hidden');
+            } else {
+                document.getElementById('main-menu').classList.add('hidden');
+                document.getElementById('game-container').classList.remove('hidden');
+                mode = m; idx = 0; score = 0; errs = []; correctList = []; qs = [...data];
+                if (m === 1) renderVocab();
+                else if (m === 4) renderImgVocab();
+                else if (m === 5) renderSingleCard();
+                else if (m === 6) startGoMode();
+                else if (m === 7) { qs.sort(() => Math.random() - 0.5); renderListenQ(); }
+                else { qs.sort(() => Math.random() - 0.5); renderQ(); }
+            }
+        }
+
+        // Menyu/tugmalar shu funksiyani chaqiradi — bu tarix (history) bilan ishlaydi
+        function go(m) {
+            if (m === 0) {
+                if (historyPushed) {
+                    // "history.back()" popstate hodisasini ishga tushiradi,
+                    // u esa showView(0)'ni chaqiradi (pastga qarang)
+                    history.back();
+                } else {
+                    showView(0);
+                }
+            } else {
+                if (!historyPushed) {
+                    history.pushState({ appView: 'game' }, '');
+                    historyPushed = true;
+                }
+                showView(m);
+            }
+        }
+
+        // Telefon/brauzerning tizim "Orqaga" tugmasi yoki gesture'i bosilganda
+        window.addEventListener('popstate', () => {
+            historyPushed = false;
+            showView(0);
+        });
+
+        function renderVocab() {
+            document.getElementById('content-area').innerHTML = '<h2 style="margin:15px 0;">Lug\'at</h2>' + data.map(w => `<div class="vocab-item"><b>${w.en} - ${w.uz}</b> <button class="speak-btn" onclick="speakWord('${w.en}')">🔊</button></div>`).join('');
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function renderImgVocab() {
+            document.getElementById('content-area').innerHTML = '<h2 style="margin:15px 0;">Rasimli Lug\'at</h2>' + data.map(w => `<div class="vocab-item"><span class="img-item">${w.icon}</span> <b>${w.en} - ${w.uz}</b> <button class="speak-btn" onclick="speakWord('${w.en}')">🔊</button></div>`).join('');
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function renderSingleCard() {
+            document.getElementById('feedback-area').innerHTML = '';
+            if (idx >= qs.length) {
+                document.getElementById('content-area').innerHTML = `<h2>Tugatdingiz!</h2><button class="menu-btn" style="background:#58cc02; margin-top:20px;" onclick="go(0)">Menyu</button>`;
+                document.getElementById('next-btn').classList.add('hidden');
+                return;
+            }
+            const q = qs[idx];
+            document.getElementById('content-area').innerHTML = `
+                <h2 style="margin:15px 0;">Dona-dona Rasimli Lug'at (${idx + 1}/${qs.length})</h2>
+                <div class="card-box">
+                    <div class="card-icon">${q.icon}</div>
+                    <div class="card-word">${q.en}</div>
+                    <div class="card-uz">${q.uz}</div>
+                    <button class="speak-btn" style="padding: 10px 20px; font-size: 16px;" onclick="speakWord('${q.en}')">🔊 Talaffuz</button>
+                </div>`;
+            document.getElementById('next-btn').textContent = idx === qs.length - 1 ? "Tugatish" : "Keyingisi";
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function renderQ() {
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+            if (idx >= qs.length) return showRes();
+            const q = qs[idx];
+            let html = `<div class="q-text">"${q.uz}" - inglizchada nima deyiladi?</div>`;
+            if (mode === 2) {
+                let wrong = data.filter(x => x.en !== q.en).sort(() => Math.random() - 0.5).slice(0, 3);
+                let opts = [q.en, ...wrong.map(x => x.en)].sort(() => Math.random() - 0.5);
+                html += `<div class="options-grid">` + opts.map(o => `<button class="test-btn" onclick="selectOpt(this, '${o}')">${o}</button>`).join('') + `</div>
+                         <button class="check-btn" id="check-btn" onclick="checkTest()">TEKSHIRISH</button>`;
+            } else {
+                html += `<input type="text" id="inp" class="spell-input" placeholder="Inglizcha yozing...">
+                         <button class="check-btn" id="check-btn" onclick="checkSpell()">TEKSHIRISH</button>`;
+            }
+            document.getElementById('content-area').innerHTML = html;
+        }
+
+        function selectOpt(btn, val) {
+            document.querySelectorAll('.test-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedAns = val;
+        }
+
+        function checkTest() {
+            if (!selectedAns) return alert("Iltimos, javobni tanlang!");
+            check(selectedAns);
+            document.getElementById('check-btn').classList.add('hidden');
+        }
+
+        function check(ans) {
+            const q = qs[idx];
+            const fb = document.getElementById('feedback-area');
+            if (ans === q.en) {
+                score++;
+                correctList.push(q.uz);
+                fb.innerHTML = `<div class="feedback" style="background:#d7ffb8; color:#2b7a0b;">✅ To'g'ri!</div>`;
+            } else {
+                errs.push(`${q.uz}: "${ans}" (xato) -> ${q.en} (to'g'ri)`);
+                fb.innerHTML = `<div class="feedback" style="background:#ffdfe0; color:#ea2b2b;">❌ Xato! To'g'ri javob: ${q.en}</div>`;
+            }
+            document.getElementById('next-btn').textContent = "Keyingisi";
+            document.getElementById('next-btn').classList.remove('hidden');
+            if (mode === 2) document.querySelectorAll('.test-btn').forEach(b => b.disabled = true);
+            else document.getElementById('check-btn').classList.add('hidden');
+        }
+
+        function checkSpell() {
+            const val = document.getElementById('inp').value.trim();
+            check(val.toLowerCase() === qs[idx].en.toLowerCase() ? qs[idx].en : val);
+        }
+
+        function nextQuestion() {
+            idx++;
+            selectedAns = null;
+            if (mode === 5) renderSingleCard();
+            else if (mode === 7) renderListenQ();
+            else renderQ();
+        }
+
+        function showRes() {
+            document.getElementById('content-area').innerHTML = `
+                <h2>Test Natijalari</h2>
+                <div style="font-size:18px; margin:20px 0;">
+                    <p>Umumiy savollar: <b>${qs.length}</b></p>
+                    <p style="color:#2b7a0b;">To'g'ri: <b>${score}</b></p>
+                    <p style="color:#ea2b2b;">Xato: <b>${qs.length - score}</b></p>
+                </div>
+                <div style="text-align:left; margin:20px 0;">
+                    ${correctList.length > 0 ? `<div style="margin-bottom:10px;">✅ <b>To'g'ri javoblar:</b> ${correctList.join(', ')}</div>` : ''}
+                    ${errs.map(e => `<div style="color:#ea2b2b; margin:5px 0;">❌ ${e}</div>`).join('')}
+                </div>
+                <button class="menu-btn" style="background:#58cc02" onclick="go(0)">Menyu</button>`;
+            document.getElementById('feedback-area').innerHTML = '';
+        }
+
+        /* ============================================================
+           "GO" REJIMI — 30 soniyalik tezkor test
+           ============================================================ */
+
+        function startGoMode() {
+            document.getElementById('next-btn').classList.add('hidden');
+            goScore = 0;
+            goDuration = 30;
+            goTimeLeft = goDuration;
+            goCurrent = null;
+            renderGoQuestion();
+            clearInterval(goInterval);
+            goInterval = setInterval(() => {
+                goTimeLeft--;
+                if (goTimeLeft <= 0) {
+                    clearInterval(goInterval);
+                    endGoMode();
+                } else {
+                    updateGoTimerUI();
+                }
+            }, 1000);
+        }
+
+        function updateGoTimerUI() {
+            const bar = document.getElementById('go-timer-bar');
+            const label = document.getElementById('go-timer-label');
+            if (bar) bar.style.width = Math.max(0, (goTimeLeft / goDuration) * 100) + '%';
+            if (label) label.textContent = `⏱️ ${goTimeLeft}s  |  ✅ ${goScore}`;
+        }
+
+        function pickRandomWord(excludeEn) {
+            let pool = data;
+            if (data.length > 1 && excludeEn) pool = data.filter(w => w.en !== excludeEn);
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function renderGoQuestion() {
+            const q = pickRandomWord(goCurrent ? goCurrent.en : null);
+            goCurrent = q;
+            let wrong = data.filter(x => x.en !== q.en).sort(() => Math.random() - 0.5).slice(0, 3);
+            let opts = [q.en, ...wrong.map(x => x.en)].sort(() => Math.random() - 0.5);
+            document.getElementById('content-area').innerHTML = `
+                <div class="go-timer-bar-wrap"><div class="go-timer-bar" id="go-timer-bar" style="width:${(goTimeLeft / goDuration) * 100}%;"></div></div>
+                <div class="go-score" id="go-timer-label">⏱️ ${goTimeLeft}s  |  ✅ ${goScore}</div>
+                <div class="q-text">"${q.uz}" - inglizchada nima deyiladi?</div>
+                <div class="options-grid" id="go-options">${opts.map(o => `<button class="test-btn" onclick="answerGo(this,'${o}')">${o}</button>`).join('')}</div>`;
+            document.getElementById('feedback-area').innerHTML = '';
+        }
+
+        function answerGo(btn, val) {
+            if (goTimeLeft <= 0) return;
+            document.querySelectorAll('#go-options .test-btn').forEach(b => b.disabled = true);
+            const correct = val === goCurrent.en;
+            if (correct) {
+                goScore++;
+                btn.style.background = '#d7ffb8'; btn.style.borderColor = '#58cc02';
+            } else {
+                btn.style.background = '#ffdfe0'; btn.style.borderColor = '#ff4b4b';
+                document.querySelectorAll('#go-options .test-btn').forEach(b => {
+                    if (b.textContent === goCurrent.en) { b.style.background = '#d7ffb8'; b.style.borderColor = '#58cc02'; }
+                });
+            }
+            updateGoTimerUI();
+            setTimeout(() => { if (goTimeLeft > 0) renderGoQuestion(); }, 500);
+        }
+
+        function endGoMode() {
+            document.getElementById('content-area').innerHTML = `
+                <h2>⚡ Go natijasi!</h2>
+                <div style="font-size:20px; margin:20px 0;">
+                    <p>To'g'ri javoblar soni: <b style="color:#2b7a0b;">${goScore}</b></p>
+                </div>
+                <button class="menu-btn" style="background:#ff4b4b" onclick="go(6)">🔁 Qayta urinish</button>
+                <button class="menu-btn" style="background:#58cc02" onclick="go(0)">Menyu</button>`;
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        /* ============================================================
+           "ESHITIB TOPISH" REJIMI (Listening Mode)
+           So'z ko'rsatilmaydi — faqat ovoz eshittiriladi, foydalanuvchi
+           to'g'ri o'zbekcha tarjimani 4 variantdan tanlaydi.
+           ============================================================ */
+
+        function renderListenQ() {
+            if (idx >= qs.length) return showRes();
+            const q = qs[idx];
+            let wrong = data.filter(x => x.en !== q.en).sort(() => Math.random() - 0.5).slice(0, 3);
+            let opts = [q.uz, ...wrong.map(x => x.uz)].sort(() => Math.random() - 0.5);
+            document.getElementById('content-area').innerHTML = `
+                <div class="q-text">🎧 Eshiting va to'g'ri tarjimani tanlang</div>
+                <div style="text-align:center; margin-bottom:20px;">
+                    <button class="speak-btn" style="padding:14px 26px; font-size:18px;" onclick="speakWord('${q.en}')">🔊 Qayta eshitish</button>
+                </div>
+                <div class="options-grid">${opts.map(o => `<button class="test-btn" onclick="selectOpt(this, '${o.replace(/'/g, "\\'")}')">${o}</button>`).join('')}</div>
+                <button class="check-btn" id="check-btn" onclick="checkListen()">TEKSHIRISH</button>`;
+            document.getElementById('feedback-area').innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+            // Savol chiqishi bilan ovozni avtomatik eshittirish
+            setTimeout(() => speakWord(q.en), 300);
+        }
+
+        function checkListen() {
+            if (!selectedAns) return alert("Iltimos, javobni tanlang!");
+            const q = qs[idx];
+            const fb = document.getElementById('feedback-area');
+            if (selectedAns === q.uz) {
+                score++;
+                correctList.push(q.en);
+                fb.innerHTML = `<div class="feedback" style="background:#d7ffb8; color:#2b7a0b;">✅ To'g'ri!</div>`;
+            } else {
+                errs.push(`${q.en}: "${selectedAns}" (xato) -> ${q.uz} (to'g'ri)`);
+                fb.innerHTML = `<div class="feedback" style="background:#ffdfe0; color:#ea2b2b;">❌ Xato! To'g'ri javob: ${q.uz}</div>`;
+            }
+            document.querySelectorAll('.test-btn').forEach(b => b.disabled = true);
+            document.getElementById('check-btn').classList.add('hidden');
+            document.getElementById('next-btn').textContent = idx === qs.length - 1 ? "Yakunlash" : "Keyingisi";
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
